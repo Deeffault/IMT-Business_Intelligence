@@ -29,9 +29,9 @@ Cette plateforme web permet d'évaluer et de comparer les performances RSE (Resp
 
 ### 1. Prérequis
 - PHP 8.2+
-- Node.js 18+
+- Node.js 22+
 - Composer
-- SQLite (déjà configuré)
+- MySQL
 
 ### 2. Installation
 ```bash
@@ -130,6 +130,7 @@ Le seeder `RseDataSeeder` inclut :
 - **ESLint + Prettier** : Qualité de code
 - **Pest** : Framework de tests PHP
 - **Laravel Pint** : Formatage de code PHP
+- **Larastan** : Linter d'erreur dans le terminal pour PHP et Laravel
 
 ## Architecture Big Data (Prévue)
 
