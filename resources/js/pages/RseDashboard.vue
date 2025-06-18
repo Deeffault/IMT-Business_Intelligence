@@ -56,7 +56,7 @@ const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'Évaluation RSE',
+    title: 'CSR Assessment',
     href: '/rse',
   },
 ];
@@ -133,17 +133,17 @@ const getRatingColor = (letter: string) => {
 </script>
 
 <template>
-  <Head title="Tableau de Bord RSE" />
+  <Head title="CSR Dashboard - EcoScope" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="space-y-6">
       <!-- En-tête -->
       <div class="bg-white rounded-lg shadow p-6">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">
-          Évaluation RSE des Entreprises
+          Corporate Sustainability Assessment
         </h1>
         <p class="text-gray-600">
-          Découvrez les performances de durabilité des entreprises françaises
+          Discover the sustainability performance of French companies
         </p>
       </div>
 
