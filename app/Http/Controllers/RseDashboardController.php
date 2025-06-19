@@ -83,9 +83,11 @@ class RseDashboardController extends Controller
         $scoreDistribution = [];
         $sectorPerformance = [];
 
-        if (! $request->header('X-Inertia-Partial-Data') ||
+        if (
+            ! $request->header('X-Inertia-Partial-Data') ||
             in_array('scoreDistribution', explode(',', $request->header('X-Inertia-Partial-Data'))) ||
-            in_array('sectorPerformance', explode(',', $request->header('X-Inertia-Partial-Data')))) {
+            in_array('sectorPerformance', explode(',', $request->header('X-Inertia-Partial-Data')))
+        ) {
 
             $scoreDistribution = RseScore::selectRaw('
                 CASE 
@@ -173,7 +175,7 @@ class RseDashboardController extends Controller
     {
         $company->load('rseScore', 'reports');
 
-        // Get similar companies (same sector)
+        // Obtention des entreprises similaires (même secteur)
         $similarCompanies = Company::with('rseScore')
             ->where('sector', $company->sector)
             ->where('id', '!=', $company->id)
@@ -192,45 +194,88 @@ class RseDashboardController extends Controller
                     'name' => $similarCompany->name,
                     'sector' => $similarCompany->sector,
                     'rseScore' => $similarCompany->rseScore ? [
-                        'global_score' => $similarCompany->rseScore->global_score,
+                        'global_score' => (float) $similarCompany->rseScore->global_score,
                         'rating_letter' => $similarCompany->rseScore->rating_letter,
                     ] : null,
                 ];
             });
 
-        // Add sector performance data for comparison
-        $sectorStats = Company::with('rseScore')
+        // Calcul des statistiques sectorielles détaillées
+        $sectorCompanies = Company::with('rseScore')
             ->where('sector', $company->sector)
             ->whereHas('rseScore')
-            ->get()
-            ->map(function ($c) {
-                return $c->rseScore->global_score;
-            });
+            ->get();
 
-        // Calculate 75th percentile (top quartile) manually
-        $sortedScores = $sectorStats->filter(fn ($v) => is_numeric($v))->sort()->values()->map(fn ($v) => (float) $v)->all();
-        $count = count($sortedScores);
+        // Statistiques globales
+        $sectorGlobalStats = $sectorCompanies->map(function ($c) {
+            return (float) $c->rseScore->global_score;
+        })->sort()->values();
+
+        // Statistiques environnementales
+        $sectorEnvironmentalStats = $sectorCompanies->map(function ($c) {
+            return (float) $c->rseScore->environmental_score;
+        });
+
+        // Statistiques sociales
+        $sectorSocialStats = $sectorCompanies->map(function ($c) {
+            return (float) $c->rseScore->social_score;
+        });
+
+        // Statistiques de gouvernance
+        $sectorGovernanceStats = $sectorCompanies->map(function ($c) {
+            return (float) $c->rseScore->governance_score;
+        });
+
+        // Statistiques d'éthique
+        $sectorEthicsStats = $sectorCompanies->map(function ($c) {
+            return (float) $c->rseScore->ethics_score;
+        });
+
+        // Calcul du top quartile (75ème percentile) pour le score global
+        $count = count($sectorGlobalStats);
         $topQuartile = null;
         if ($count > 0) {
             $pos = 0.75 * ($count - 1);
             $base = floor($pos);
             $rest = $pos - $base;
             if (($base + 1) < $count) {
-                $topQuartile = $sortedScores[(int) $base] + $rest * ($sortedScores[(int) $base + 1] - $sortedScores[(int) $base]);
+                $topQuartile = $sectorGlobalStats[(int) $base] + $rest * ($sectorGlobalStats[(int) $base + 1] - $sectorGlobalStats[(int) $base]);
             } else {
-                $topQuartile = $sortedScores[(int) $base];
+                $topQuartile = $sectorGlobalStats[(int) $base];
             }
         }
 
         $sectorPerformance = [
-            'average_score' => $sectorStats->avg(),
-            'median_score' => $sectorStats->median(),
-            'top_quartile' => $topQuartile,
-            'company_count' => $sectorStats->count(),
+            'average_score' => round($sectorGlobalStats->avg(), 2),
+            'median_score' => round($sectorGlobalStats->median(), 2),
+            'top_quartile' => round($topQuartile, 2),
+            'company_count' => $sectorGlobalStats->count(),
+            // Ajout des moyennes par catégorie avec précision décimale
+            'environmental_average' => round($sectorEnvironmentalStats->avg(), 2),
+            'social_average' => round($sectorSocialStats->avg(), 2),
+            'governance_average' => round($sectorGovernanceStats->avg(), 2),
+            'ethics_average' => round($sectorEthicsStats->avg(), 2),
         ];
 
+        // Préparer les données de la company avec les scores décimaux
+        $companyData = $company->toArray();
+        if ($company->rseScore) {
+            $companyData['rseScore'] = [
+                'id' => $company->rseScore->id,
+                'global_score' => (float) $company->rseScore->global_score,
+                'rating_letter' => $company->rseScore->rating_letter,
+                'environmental_score' => (float) $company->rseScore->environmental_score,
+                'social_score' => (float) $company->rseScore->social_score,
+                'governance_score' => (float) $company->rseScore->governance_score,
+                'ethics_score' => (float) $company->rseScore->ethics_score,
+                'detailed_metrics' => $company->rseScore->detailed_metrics,
+                'data_quality_score' => $company->rseScore->data_quality_score,
+                'last_updated' => $company->rseScore->last_updated,
+            ];
+        }
+
         return Inertia::render('CompanyDetail', [
-            'company' => $company,
+            'company' => $companyData,
             'similarCompanies' => $similarCompanies,
             'sectorPerformance' => $sectorPerformance,
         ]);
@@ -248,25 +293,6 @@ class RseDashboardController extends Controller
         return Inertia::render('CompanyComparison', [
             'companies' => $companies,
         ]);
-    }
-
-    public function refreshScore(Company $company)
-    {
-        try {
-            $score = $this->rseDataService->updateCompanyScore($company);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Score updated successfully',
-                'score' => $score,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error updating score',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
     }
 
     public function companiesTable(Request $request): Response

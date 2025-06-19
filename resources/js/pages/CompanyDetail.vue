@@ -89,9 +89,22 @@ interface SimilarCompany {
     };
 }
 
+interface SectorPerformance {
+    average_score: number;
+    median_score: number;
+    top_quartile: number;
+    company_count: number;
+    // Ajoutez ces propriétés pour les moyennes par catégorie
+    environmental_average?: number;
+    social_average?: number;
+    governance_average?: number;
+    ethics_average?: number;
+}
+
 const props = defineProps<{
     company: Company;
     similarCompanies: SimilarCompany[];
+    sectorPerformance: SectorPerformance;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -117,6 +130,23 @@ const getScoreColor = (score: number) => {
     if (score >= 60) return 'text-cyan-600';
     if (score >= 40) return 'text-yellow-600';
     return 'text-red-600';
+};
+
+const getCategoryScore = (category: string): number => {
+    if (!props.company?.rseScore) return 0;
+
+    switch (category.toLowerCase()) {
+        case 'environmental':
+            return props.company.rseScore.environmental_score || 0;
+        case 'social':
+            return props.company.rseScore.social_score || 0;
+        case 'governance':
+            return props.company.rseScore.governance_score || 0;
+        case 'ethics':
+            return props.company.rseScore.ethics_score || 0;
+        default:
+            return 0;
+    }
 };
 
 // Fonction pour générer des variations cohérentes basées sur les scores réels
@@ -256,15 +286,21 @@ const historicalData = computed(() => {
 
 // Comparaison sectorielle avec moyennes réalistes
 const sectorComparison = computed(() => {
+    // Scores de la compagnie depuis la base de données (déjà en décimal)
     const companyScores = [
-        props.company.rseScore?.environmental_score || 0,
-        props.company.rseScore?.social_score || 0,
-        props.company.rseScore?.governance_score || 0,
-        props.company.rseScore?.ethics_score || 0,
+        getCategoryScore('environmental'),
+        getCategoryScore('social'),
+        getCategoryScore('governance'),
+        getCategoryScore('ethics')
     ];
 
-    // Moyennes sectorielles basées sur le secteur
-    const sectorAverages = getSectorAverages(props.company.sector);
+    // Moyennes sectorielles (déjà en décimal depuis le contrôleur)
+    const sectorAverages = [
+        props.sectorPerformance.environmental_average || 0,
+        props.sectorPerformance.social_average || 0,
+        props.sectorPerformance.governance_average || 0,
+        props.sectorPerformance.ethics_average || 0
+    ];
 
     return {
         labels: ['Environmental', 'Social', 'Governance', 'Ethics'],
@@ -274,21 +310,47 @@ const sectorComparison = computed(() => {
                 data: companyScores,
                 backgroundColor: 'rgba(6, 182, 212, 0.2)',
                 borderColor: '#0891B2',
-                borderWidth: 2,
+                borderWidth: 3,
+                pointBackgroundColor: '#0891B2',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#0891B2',
+                pointHoverBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7,
             },
             {
                 label: `${props.company.sector} Average`,
                 data: sectorAverages,
-                backgroundColor: 'rgba(156, 163, 175, 0.2)',
+                backgroundColor: 'rgba(156, 163, 175, 0.1)',
                 borderColor: '#9CA3AF',
                 borderWidth: 2,
+                borderDash: [5, 5],
+                pointBackgroundColor: '#9CA3AF',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#9CA3AF',
+                pointHoverBorderColor: '#fff',
+                pointBorderWidth: 1,
+                pointRadius: 4,
+                pointHoverRadius: 6,
             },
         ],
     };
 });
 
 // Fonction pour obtenir des moyennes sectorielles réalistes
-const getSectorAverages = (sector: string) => {
+const getSectorAverages = (sector: string): number[] => {
+    // Utiliser les données réelles du secteur si disponibles
+    if (props.sectorPerformance) {
+        return [
+            props.sectorPerformance.environmental_average || 0,
+            props.sectorPerformance.social_average || 0,
+            props.sectorPerformance.governance_average || 0,
+            props.sectorPerformance.ethics_average || 0,
+        ];
+    }
+
+    // Fallback vers des moyennes par défaut par secteur
     const averages: Record<string, number[]> = {
         'Technology': [68, 72, 78, 75],
         'Finance': [70, 68, 82, 80],
@@ -377,18 +439,57 @@ const kpiData = computed(() => {
     ];
 });
 
-const chartOptions = {
+const sectorComparisonOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
         legend: {
+            display: true,
             position: 'top' as const,
+            labels: {
+                font: {
+                    size: 12,
+                },
+                padding: 20,
+                usePointStyle: true,
+            },
         },
+        tooltip: {
+            callbacks: {
+                label: function (context: any) {
+                    const label = context.dataset.label || '';
+                    const value = Math.round(context.parsed.r || 0);
+                    return `${label}: ${value}/100`;
+                }
+            }
+        }
     },
     scales: {
-        y: {
+        r: {
             beginAtZero: true,
             max: 100,
+            grid: {
+                color: 'rgba(0, 0, 0, 0.1)',
+            },
+            angleLines: {
+                color: 'rgba(0, 0, 0, 0.1)',
+            },
+            pointLabels: {
+                font: {
+                    size: 12,
+                    weight: 'bold' as const,
+                },
+                color: '#374151',
+            },
+            ticks: {
+                display: true,
+                stepSize: 20,
+                backdropColor: 'rgba(255, 255, 255, 0.75)',
+                color: '#6B7280',
+                font: {
+                    size: 10,
+                }
+            },
         },
     },
 };
@@ -535,7 +636,7 @@ const doughnutOptions = {
                                 </div>
                                 <span class="text-xl font-bold"
                                     :class="getScoreColor(company.rseScore.environmental_score || 0)">
-                                    {{ Math.round(company.rseScore.environmental_score || 0) }}
+                                    {{ (company.rseScore.environmental_score || 0).toFixed(1) }}
                                 </span>
                             </div>
 
@@ -546,7 +647,7 @@ const doughnutOptions = {
                                 </div>
                                 <span class="text-xl font-bold"
                                     :class="getScoreColor(company.rseScore.social_score || 0)">
-                                    {{ Math.round(company.rseScore.social_score || 0) }}
+                                    {{ (company.rseScore.social_score || 0).toFixed(1) }}
                                 </span>
                             </div>
                         </div>
@@ -559,7 +660,7 @@ const doughnutOptions = {
                                 </div>
                                 <span class="text-xl font-bold"
                                     :class="getScoreColor(company.rseScore.governance_score || 0)">
-                                    {{ Math.round(company.rseScore.governance_score || 0) }}
+                                    {{ (company.rseScore.governance_score || 0).toFixed(1) }}
                                 </span>
                             </div>
 
@@ -570,7 +671,7 @@ const doughnutOptions = {
                                 </div>
                                 <span class="text-xl font-bold"
                                     :class="getScoreColor(company.rseScore.ethics_score || 0)">
-                                    {{ Math.round(company.rseScore.ethics_score || 0) }}
+                                    {{ (company.rseScore.ethics_score || 0).toFixed(1) }}
                                 </span>
                             </div>
                         </div>
@@ -586,7 +687,7 @@ const doughnutOptions = {
                             </div>
                             <div class="text-right">
                                 <div class="text-3xl font-bold" :class="getScoreColor(company.rseScore.global_score)">
-                                    {{ Math.round(company.rseScore.global_score) }}/100
+                                    {{ (company.rseScore.global_score).toFixed(1) }}/100
                                 </div>
                                 <div class="w-32 bg-gray-200 rounded-full h-3 mt-2">
                                     <div class="bg-gradient-to-r from-emerald-500 to-cyan-500 h-3 rounded-full transition-all duration-500"
@@ -596,43 +697,16 @@ const doughnutOptions = {
                         </div>
                     </div>
                 </div>
-
-                <!-- Radar Chart -->
-                <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
-                    <div class="flex items-center space-x-3 mb-6">
-                        <div
-                            class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
-                            <StarIcon class="h-4 w-4 text-white" />
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900">Performance Radar</h3>
-                    </div>
-                    <div class="h-64">
-                        <Radar v-if="radarData" :data="radarData" :options="radarOptions" />
-                    </div>
-                </div>
             </div>
 
             <!-- Data Quality & Last Update -->
             <div v-if="company.rseScore" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-6">
-                    <h4 class="font-semibold text-gray-900 mb-3">Data Quality</h4>
-                    <div class="flex items-center space-x-3">
-                        <div class="flex-1 bg-gray-200 rounded-full h-3">
-                            <div class="bg-gradient-to-r from-emerald-500 to-cyan-500 h-3 rounded-full transition-all duration-500"
-                                :style="`width: ${company.rseScore.data_quality_score || 0}%`"></div>
-                        </div>
-                        <span class="text-sm font-medium text-gray-700">
-                            {{ company.rseScore.data_quality_score || 0 }}%
-                        </span>
-                    </div>
-                </div>
-
-                <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-6">
                     <h4 class="font-semibold text-gray-900 mb-3">Last Updated</h4>
                     <div class="flex items-center space-x-2 text-gray-600">
                         <CalendarIcon class="w-4 h-4" />
                         <span>{{ company.rseScore.last_updated ? formatDate(company.rseScore.last_updated) : 'N/A'
-                        }}</span>
+                            }}</span>
                     </div>
                 </div>
             </div>
@@ -713,7 +787,7 @@ const doughnutOptions = {
                             </div>
                             <div class="text-right">
                                 <div class="text-lg font-bold text-emerald-600">{{ performanceMetrics.carbonFootprint
-                                }}%</div>
+                                    }}%</div>
                                 <div class="w-20 bg-emerald-200 rounded-full h-2 mt-1">
                                     <div class="bg-emerald-500 h-2 rounded-full"
                                         :style="`width: ${performanceMetrics.carbonFootprint}%`"></div>
@@ -832,44 +906,97 @@ const doughnutOptions = {
                 <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
                     <div class="flex items-center space-x-3 mb-6">
                         <div
-                            class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
-                            <StarIcon class="h-4 w-4 text-white" />
+                            class="h-8 w-8 bg-gradient-to-br from-cyan-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                            <BarChart3Icon class="h-4 w-4 text-white" />
                         </div>
                         <h3 class="text-xl font-bold text-gray-900">Sector Comparison</h3>
                     </div>
+
+                    <!-- Statistiques de comparaison -->
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-emerald-50 p-3 rounded-lg">
+                            <div class="text-sm text-gray-600">Your Overall Score</div>
+                            <div class="font-bold text-lg text-emerald-600">
+                                {{ Math.round(company.rseScore?.global_score || 0) }}/100
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <div class="text-sm text-gray-600">Sector Average</div>
+                            <div class="font-bold text-lg text-gray-600">
+                                {{ Math.round(sectorPerformance?.average_score || 0) }}/100
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="h-80">
-                        <Radar :data="sectorComparison" :options="radarOptions" />
+                        <Radar :data="sectorComparison" :options="sectorComparisonOptions" />
+                    </div>
+
+                    <!-- Tableau comparatif détaillé -->
+                    <div class="mt-6 overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr>
+                                    <th class="text-left py-2 px-4 bg-gray-50 font-medium text-gray-600">Category</th>
+                                    <th class="text-center py-2 px-4 bg-gray-50 font-medium text-gray-600">{{
+                                        company.name }}</th>
+                                    <th class="text-center py-2 px-4 bg-gray-50 font-medium text-gray-600">Sector Avg.
+                                    </th>
+                                    <th class="text-center py-2 px-4 bg-gray-50 font-medium text-gray-600">Difference
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(category, index) in ['Environmental', 'Social', 'Governance', 'Ethics']"
+                                    :key="category">
+                                    <td class="py-2 px-4 border-t border-gray-100 font-medium">{{ category }}</td>
+                                    <td class="py-2 px-4 border-t border-gray-100 text-center">
+                                        {{ getCategoryScore(category).toFixed(1) }}
+                                    </td>
+                                    <td class="py-2 px-4 border-t border-gray-100 text-center">
+                                        {{ sectorComparison.datasets[1].data[index].toFixed(1) }}
+                                    </td>
+                                    <td class="py-2 px-4 border-t border-gray-100 text-center">
+                                        <span :class="getCategoryScore(category) >= sectorComparison.datasets[1].data[index]
+                                            ? 'text-emerald-600' : 'text-red-600'">
+                                            {{ getCategoryScore(category) >= sectorComparison.datasets[1].data[index] ?
+                                            '+' : '' }}
+                                            {{ (getCategoryScore(category) -
+                                                sectorComparison.datasets[1].data[index]).toFixed(1) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </div>
 
-            <!-- Sustainability Initiatives -->
-            <!-- Sustainability Initiatives -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
-                    <div class="flex items-center space-x-3 mb-6">
-                        <div
-                            class="h-8 w-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                            <Target class="h-4 w-4 text-white" />
+                <!-- Sustainability Initiatives -->
+                <div class="grid grid-cols-1 lg:grid-cols-1 gap-8">
+                    <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
+                        <div class="flex items-center space-x-3 mb-6">
+                            <div
+                                class="h-8 w-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                                <Target class="h-4 w-4 text-white" />
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-900">Sustainability Initiatives</h3>
                         </div>
-                        <h3 class="text-lg font-bold text-gray-900">Sustainability Initiatives</h3>
-                    </div>
-                    <div class="h-64 flex items-center justify-center">
-                        <div class="w-full h-full">
-                            <Doughnut :data="sustainabilityInitiatives" :options="doughnutOptions" />
+                        <div class="h-64 flex items-center justify-center">
+                            <div class="w-full h-full">
+                                <Doughnut :data="sustainabilityInitiatives" :options="doughnutOptions" />
+                            </div>
                         </div>
-                    </div>
-                    <!-- Ajout d'un résumé textuel -->
-                    <div class="mt-4 text-center">
-                        <div class="text-sm text-gray-600">
-                            Total: {{sustainabilityInitiatives.datasets[0].data.reduce((a, b) => a + b, 0)}}
-                            initiatives
+                        <!-- Ajout d'un résumé textuel -->
+                        <div class="mt-4 text-center">
+                            <div class="text-sm text-gray-600">
+                                Total: {{sustainabilityInitiatives.datasets[0].data.reduce((a, b) => a + b, 0)}}
+                                initiatives
+                            </div>
                         </div>
                     </div>
                 </div>
-
                 <div
-                    class="lg:col-span-2 bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
+                    class="lg:col-span-1 bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
                     <div class="flex items-center space-x-3 mb-6">
                         <div
                             class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
@@ -886,7 +1013,9 @@ const doughnutOptions = {
                             </div>
                             <div>
                                 <h4 class="font-semibold text-gray-900">ISO 14001 Certification Renewed</h4>
-                                <p class="text-sm text-gray-600 mt-1">Environmental management system certification for
+                                <p class="text-sm text-gray-600 mt-1">Environmental management system
+                                    certification
+                                    for
                                     2024-2027</p>
                                 <span class="text-xs text-emerald-600 font-medium">2 months ago</span>
                             </div>
@@ -899,7 +1028,8 @@ const doughnutOptions = {
                             </div>
                             <div>
                                 <h4 class="font-semibold text-gray-900">Carbon Neutral Operations</h4>
-                                <p class="text-sm text-gray-600 mt-1">Achieved 100% renewable energy for all facilities
+                                <p class="text-sm text-gray-600 mt-1">Achieved 100% renewable energy for all
+                                    facilities
                                 </p>
                                 <span class="text-xs text-cyan-600 font-medium">3 months ago</span>
                             </div>
@@ -912,7 +1042,8 @@ const doughnutOptions = {
                             </div>
                             <div>
                                 <h4 class="font-semibold text-gray-900">Employee Wellbeing Program</h4>
-                                <p class="text-sm text-gray-600 mt-1">Launched comprehensive mental health and wellness
+                                <p class="text-sm text-gray-600 mt-1">Launched comprehensive mental health and
+                                    wellness
                                     initiative</p>
                                 <span class="text-xs text-purple-600 font-medium">1 month ago</span>
                             </div>

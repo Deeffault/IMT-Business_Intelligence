@@ -27,8 +27,6 @@ Route::get('/rse', [RseDashboardController::class, 'index'])->name('rse.dashboar
 Route::middleware(['auth'])->group(function () {
     Route::get('/rse/search', [RseDashboardController::class, 'search'])->name('rse.search');
     Route::get('/rse/company/{company}', [RseDashboardController::class, 'show'])->name('rse.company.show');
-    Route::get('/rse/compare', [RseDashboardController::class, 'compare'])->name('rse.compare');
-    Route::post('/rse/company/{company}/refresh', [RseDashboardController::class, 'refreshScore'])->name('rse.company.refresh');
 });
 
 // Affichage de toutes les entreprises avec filtres et pagination
