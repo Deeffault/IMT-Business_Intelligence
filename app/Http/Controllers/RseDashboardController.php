@@ -15,24 +15,48 @@ class RseDashboardController extends Controller
         protected RseDataService $rseDataService
     ) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $stats = [
-            'total_companies' => Company::count(),
-            'avg_global_score' => RseScore::avg('global_score') ?? 0,
-            'top_performers' => Company::with('rseScore')
-                ->whereHas('rseScore', fn ($q) => $q->where('global_score', '>=', 80))
-                ->count(),
-            'need_improvement' => Company::with('rseScore')
-                ->whereHas('rseScore', fn ($q) => $q->where('global_score', '<', 60))
-                ->count(),
-        ];
+        $sortBy = $request->get('sort', 'global_score');
+        $sortOrder = $request->get('order', 'desc');
+        
+        // Validate sort parameters
+        $allowedSortFields = ['name', 'sector', 'global_score', 'rating_letter'];
+        $allowedSortOrders = ['asc', 'desc'];
+        
+        $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'global_score';
+        $sortOrder = in_array($sortOrder, $allowedSortOrders) ? $sortOrder : 'desc';
 
-        $topCompanies = Company::with('rseScore')
-            ->whereHas('rseScore')
+        // Only calculate stats if not a partial reload
+        $stats = [];
+        if (!$request->header('X-Inertia-Partial-Data') || in_array('stats', explode(',', $request->header('X-Inertia-Partial-Data')))) {
+            $stats = [
+                'total_companies' => Company::count(),
+                'avg_global_score' => RseScore::avg('global_score') ?? 0,
+                'top_performers' => Company::with('rseScore')
+                    ->whereHas('rseScore', fn ($q) => $q->where('global_score', '>=', 80))
+                    ->count(),
+                'need_improvement' => Company::with('rseScore')
+                    ->whereHas('rseScore', fn ($q) => $q->where('global_score', '<', 60))
+                    ->count(),
+            ];
+        }
+
+        $topCompaniesQuery = Company::with('rseScore')
+            ->whereHas('rseScore');
+
+        // Apply sorting based on the field
+        if ($sortBy === 'global_score' || $sortBy === 'rating_letter') {
+            $topCompaniesQuery->join('rse_scores', 'companies.id', '=', 'rse_scores.company_id')
+                ->orderBy("rse_scores.{$sortBy}", $sortOrder)
+                ->select('companies.*');
+        } else {
+            $topCompaniesQuery->orderBy($sortBy, $sortOrder);
+        }
+
+        $topCompanies = $topCompaniesQuery
+            ->take(20)
             ->get()
-            ->sortByDesc('rseScore.global_score')
-            ->take(10)
             ->map(function ($company) {
                 return [
                     'id' => $company->id,
@@ -43,39 +67,52 @@ class RseDashboardController extends Controller
                 ];
             });
 
-        $scoreDistribution = RseScore::selectRaw('
-            CASE 
-                WHEN global_score >= 80 THEN "Excellent (80-100)"
-                WHEN global_score >= 60 THEN "Good (60-79)"
-                WHEN global_score >= 40 THEN "Average (40-59)"
-                ELSE "Poor (0-39)"
-            END as category,
-            COUNT(*) as count
-        ')
-            ->groupBy('category')
-            ->get()
-            ->mapWithKeys(function ($item) {
-                return [$item['category'] => $item['count']];
-            });
+        // Only calculate charts data if not a partial reload or if explicitly requested
+        $scoreDistribution = [];
+        $sectorPerformance = [];
+        
+        if (!$request->header('X-Inertia-Partial-Data') || 
+            in_array('scoreDistribution', explode(',', $request->header('X-Inertia-Partial-Data'))) ||
+            in_array('sectorPerformance', explode(',', $request->header('X-Inertia-Partial-Data')))) {
+            
+            $scoreDistribution = RseScore::selectRaw('
+                CASE 
+                    WHEN global_score >= 80 THEN "Excellent (80-100)"
+                    WHEN global_score >= 60 THEN "Good (60-79)"
+                    WHEN global_score >= 40 THEN "Average (40-59)"
+                    ELSE "Poor (0-39)"
+                END as category,
+                COUNT(*) as count
+            ')
+                ->groupBy('category')
+                ->get()
+                ->mapWithKeys(function ($item) {
+                    return [$item['category'] => $item['count']];
+                });
 
-        $sectorPerformance = Company::with('rseScore')
-            ->whereHas('rseScore')
-            ->get()
-            ->groupBy('sector')
-            ->map(function ($companies, $sector) {
-                return [
-                    'sector' => $sector,
-                    'avg_score' => $companies->avg('rseScore.global_score'),
-                    'company_count' => $companies->count(),
-                ];
-            })
-            ->values();
+            $sectorPerformance = Company::with('rseScore')
+                ->whereHas('rseScore')
+                ->get()
+                ->groupBy('sector')
+                ->map(function ($companies, $sector) {
+                    return [
+                        'sector' => $sector,
+                        'avg_score' => $companies->avg('rseScore.global_score'),
+                        'company_count' => $companies->count(),
+                    ];
+                })
+                ->values();
+        }
 
         return Inertia::render('RseDashboard', [
             'stats' => $stats,
             'topCompanies' => $topCompanies,
             'scoreDistribution' => $scoreDistribution,
             'sectorPerformance' => $sectorPerformance,
+            'currentSort' => [
+                'field' => $sortBy,
+                'order' => $sortOrder,
+            ],
         ]);
     }
 
@@ -85,8 +122,17 @@ class RseDashboardController extends Controller
         $sector = $request->get('sector');
         $minScore = $request->get('min_score');
         $maxScore = $request->get('max_score');
+        $sortBy = $request->get('sort', 'global_score');
+        $sortOrder = $request->get('order', 'desc');
 
-        $companies = Company::with('rseScore')
+        // Validate sort parameters
+        $allowedSortFields = ['name', 'sector', 'global_score', 'rating_letter'];
+        $allowedSortOrders = ['asc', 'desc'];
+        
+        $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'global_score';
+        $sortOrder = in_array($sortOrder, $allowedSortOrders) ? $sortOrder : 'desc';
+
+        $companiesQuery = Company::with('rseScore')
             ->when($query, function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
                     ->orWhere('siren', 'like', "%{$query}%");
@@ -95,8 +141,18 @@ class RseDashboardController extends Controller
             ->when($minScore || $maxScore, function ($q) use ($minScore, $maxScore) {
                 $q->byScore($minScore, $maxScore);
             })
-            ->whereHas('rseScore')
-            ->paginate(20);
+            ->whereHas('rseScore');
+
+        // Apply sorting
+        if ($sortBy === 'global_score' || $sortBy === 'rating_letter') {
+            $companiesQuery->join('rse_scores', 'companies.id', '=', 'rse_scores.company_id')
+                ->orderBy("rse_scores.{$sortBy}", $sortOrder)
+                ->select('companies.*');
+        } else {
+            $companiesQuery->orderBy($sortBy, $sortOrder);
+        }
+
+        $companies = $companiesQuery->paginate(20);
 
         return response()->json($companies);
     }

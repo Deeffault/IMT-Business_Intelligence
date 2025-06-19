@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { Bar, Doughnut } from 'vue-chartjs';
-import { TrendingUpIcon, BuildingIcon, BarChart3Icon, StarIcon, AlertTriangleIcon } from 'lucide-vue-next';
+import { TrendingUpIcon, BuildingIcon, BarChart3Icon, StarIcon, AlertTriangleIcon, ChevronUpIcon, ChevronDownIcon } from 'lucide-vue-next';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -51,6 +51,10 @@ interface Props {
     avg_score: number;
     company_count: number;
   }>;
+  currentSort?: {
+    field: string;
+    order: string;
+  };
 }
 
 const props = defineProps<Props>();
@@ -63,6 +67,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const searchQuery = ref('');
+const sortBy = ref(props.currentSort?.field || 'global_score');
+const sortOrder = ref(props.currentSort?.order || 'desc');
 
 // Enhanced chart configurations with your color scheme
 const scoreDistributionChart = computed(() => ({
@@ -109,7 +115,7 @@ const chartOptions = {
         padding: 20,
         font: {
           size: 12,
-          weight: 'bold', // Changed from '500' to 'bold' to match allowed values
+          weight: 'normal' // Changed from '500' to 'bold' to match allowed values
         },
       },
     },
@@ -151,7 +157,7 @@ const doughnutOptions = {
         padding: 15,
         font: {
           size: 12,
-          weight: 'bold', // Changed from '500' to 'bold' to match allowed values
+          weight: 'normal' // Changed from '500' to 'bold' to match allowed values
         },
       },
     },
@@ -174,7 +180,39 @@ const getRatingColor = (letter: string) => {
 
 const handleSearch = () => {
   console.log('Searching for:', searchQuery.value);
-  // Implement search functionality
+  // Implement search functionality using Inertia
+  router.get('/rse/search', { q: searchQuery.value }, {
+    preserveState: true,
+    preserveScroll: true,
+  });
+};
+
+const handleSort = (column: string) => {
+  if (sortBy.value === column) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortBy.value = column;
+    sortOrder.value = 'desc';
+  }
+  
+  // Trigger data refresh with new sorting using Inertia
+  refreshDashboardData();
+};
+
+const refreshDashboardData = () => {
+  router.get('/rse', {
+    sort: sortBy.value,
+    order: sortOrder.value,
+  }, {
+    preserveState: true,
+    preserveScroll: true,
+    only: ['topCompanies', 'currentSort'], // Only reload these props
+  });
+};
+
+const getSortIcon = (column: string) => {
+  if (sortBy.value !== column) return null;
+  return sortOrder.value === 'asc' ? ChevronUpIcon : ChevronDownIcon;
 };
 </script>
 
@@ -320,15 +358,40 @@ const handleSearch = () => {
       <!-- Enhanced Top Companies Table -->
       <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 overflow-hidden">
         <div class="px-8 py-6 border-b border-gray-200/50 bg-gradient-to-r from-emerald-50 to-cyan-50">
-          <div class="flex items-center space-x-3">
-            <div class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
-              <StarIcon class="h-4 w-4 text-white" />
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                <StarIcon class="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-gray-900">
+                  Top CSR Performers
+                </h3>
+                <p class="text-gray-600 text-sm mt-1">Companies leading in sustainability practices</p>
+              </div>
             </div>
-            <div>
-              <h3 class="text-xl font-bold text-gray-900">
-                Top CSR Performers
-              </h3>
-              <p class="text-gray-600 text-sm mt-1">Companies leading in sustainability practices</p>
+            <div class="flex items-center space-x-2">
+              <span class="text-sm text-gray-500">Sort by:</span>
+              <select 
+                v-model="sortBy" 
+                @change="refreshDashboardData"
+                class="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:border-emerald-500 focus:outline-none"
+              >
+                <option value="global_score">Score</option>
+                <option value="name">Name</option>
+                <option value="sector">Sector</option>
+                <option value="rating_letter">Rating</option>
+              </select>
+              <button 
+                @click="handleSort(sortBy)"
+                class="p-1 hover:bg-gray-100 rounded transition-colors"
+                :class="{ 'bg-emerald-50 text-emerald-600': sortBy === sortBy }"
+              >
+                <component 
+                  :is="getSortIcon(sortBy) || ChevronDownIcon" 
+                  class="h-4 w-4 text-gray-600"
+                />
+              </button>
             </div>
           </div>
         </div>
@@ -336,17 +399,57 @@ const handleSearch = () => {
           <table class="min-w-full divide-y divide-gray-200/50">
             <thead class="bg-gray-50/50">
               <tr>
-                <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Company
+                <th class="px-8 py-4 text-left">
+                  <button 
+                    @click="handleSort('name')"
+                    class="flex items-center space-x-1 text-xs font-semibold text-gray-600 uppercase tracking-wider hover:text-emerald-600 transition-colors"
+                  >
+                    <span>Company</span>
+                    <component 
+                      v-if="getSortIcon('name')" 
+                      :is="getSortIcon('name')" 
+                      class="h-3 w-3"
+                    />
+                  </button>
                 </th>
-                <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Sector
+                <th class="px-8 py-4 text-left">
+                  <button 
+                    @click="handleSort('sector')"
+                    class="flex items-center space-x-1 text-xs font-semibold text-gray-600 uppercase tracking-wider hover:text-emerald-600 transition-colors"
+                  >
+                    <span>Sector</span>
+                    <component 
+                      v-if="getSortIcon('sector')" 
+                      :is="getSortIcon('sector')" 
+                      class="h-3 w-3"
+                    />
+                  </button>
                 </th>
-                <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Score
+                <th class="px-8 py-4 text-left">
+                  <button 
+                    @click="handleSort('global_score')"
+                    class="flex items-center space-x-1 text-xs font-semibold text-gray-600 uppercase tracking-wider hover:text-emerald-600 transition-colors"
+                  >
+                    <span>Score</span>
+                    <component 
+                      v-if="getSortIcon('global_score')" 
+                      :is="getSortIcon('global_score')" 
+                      class="h-3 w-3"
+                    />
+                  </button>
                 </th>
-                <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Rating
+                <th class="px-8 py-4 text-left">
+                  <button 
+                    @click="handleSort('rating_letter')"
+                    class="flex items-center space-x-1 text-xs font-semibold text-gray-600 uppercase tracking-wider hover:text-emerald-600 transition-colors"
+                  >
+                    <span>Rating</span>
+                    <component 
+                      v-if="getSortIcon('rating_letter')" 
+                      :is="getSortIcon('rating_letter')" 
+                      class="h-3 w-3"
+                    />
+                  </button>
                 </th>
                 <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Actions
@@ -420,7 +523,7 @@ const handleSearch = () => {
           </div>
           <button 
             @click="handleSearch"
-            class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-emerald-600 to-cyan-600 px-8 py-3 text-sm font-semibold text-white shadow-lg hover:from-emerald-700 hover:to-cyan-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-all duration-200"
+            class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-emerald-600 to-cyan-600 px-8 py-3 text-sm font-semibold text-white shadow-lg hover:from-emerald-700 hover:to-cyan-700 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-all duration-200"
           >
             Search Company
           </button>

@@ -16,6 +16,9 @@ Route::get('dashboard', [RseDashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+// RSE Dashboard route (public access) - main route
+Route::get('/rse', [RseDashboardController::class, 'index'])->name('rse.dashboard');
+
 // Additional RSE routes for detailed functionality
 Route::middleware(['auth'])->group(function () {
     Route::get('/rse/search', [RseDashboardController::class, 'search'])->name('rse.search');
