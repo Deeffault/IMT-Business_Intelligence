@@ -46,9 +46,9 @@ class RseDashboardController extends Controller
         $scoreDistribution = RseScore::selectRaw('
             CASE 
                 WHEN global_score >= 80 THEN "Excellent (80-100)"
-                WHEN global_score >= 60 THEN "Bon (60-79)"
-                WHEN global_score >= 40 THEN "Moyen (40-59)"
-                ELSE "Faible (0-39)"
+                WHEN global_score >= 60 THEN "Good (60-79)"
+                WHEN global_score >= 40 THEN "Average (40-59)"
+                ELSE "Poor (0-39)"
             END as category,
             COUNT(*) as count
         ')
@@ -105,7 +105,7 @@ class RseDashboardController extends Controller
     {
         $company->load('rseScore', 'reports');
 
-        // Récupération des entreprises similaires (même secteur)
+        // Get similar companies (same sector)
         $similarCompanies = Company::with('rseScore')
             ->where('sector', $company->sector)
             ->where('id', '!=', $company->id)
@@ -140,13 +140,13 @@ class RseDashboardController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Score mis à jour avec succès',
+                'message' => 'Score updated successfully',
                 'score' => $score,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de la mise à jour du score',
+                'message' => 'Error updating score',
                 'error' => $e->getMessage(),
             ], 500);
         }

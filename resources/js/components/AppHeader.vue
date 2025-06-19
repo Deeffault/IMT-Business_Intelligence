@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import AppLogo from '@/components/AppLogo.vue';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -12,7 +10,7 @@ import UserMenuContent from '@/components/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
 import type { BreadcrumbItem, NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Menu, Search, Newspaper } from 'lucide-vue-next';
+import { BookOpen, Folder, Home, LayoutGrid, Menu, Search, Newspaper, TrendingUpIcon } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Props {
@@ -34,7 +32,7 @@ const activeItemStyles = computed(
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'CSR Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
     },
@@ -43,17 +41,22 @@ const mainNavItems: NavItem[] = [
         href: '/blog',
         icon: Newspaper,
     },
+    {
+        title: 'Home',
+        href: '/',
+        icon: Home,
+    },
 ];
 
 const rightNavItems: NavItem[] = [
     {
-        title: 'Repository',
+        title: 'EcoScope Repository',
         href: 'https://github.com/Deeffault/IMT-Business_Intelligence',
         icon: Folder,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
+        title: 'CSR Documentation',
+        href: 'https://csrd.efrag.org/',
         icon: BookOpen,
     },
 ];
@@ -74,7 +77,9 @@ const rightNavItems: NavItem[] = [
                         <SheetContent side="left" class="w-[300px] p-6">
                             <SheetTitle class="sr-only">Navigation Menu</SheetTitle>
                             <SheetHeader class="flex justify-start text-left">
-                                <AppLogoIcon class="size-6 fill-current text-black dark:text-white" />
+                                <div class="h-6 w-6 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded flex items-center justify-center">
+                                    <TrendingUpIcon class="h-4 w-4 text-white" />
+                                </div>
                             </SheetHeader>
                             <div class="flex h-full flex-1 flex-col justify-between space-y-4 py-6">
                                 <nav class="-mx-3 space-y-1">
@@ -108,7 +113,12 @@ const rightNavItems: NavItem[] = [
                 </div>
 
                 <Link :href="route('dashboard')" class="flex items-center gap-x-2">
-                    <AppLogo />
+                    <div class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                        <TrendingUpIcon class="h-5 w-5 text-white" />
+                    </div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
+                        EcoScope
+                    </span>
                 </Link>
 
                 <!-- Desktop Menu -->

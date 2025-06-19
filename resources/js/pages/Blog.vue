@@ -192,7 +192,7 @@ const isMobileMenuOpen = ref(false);
             </Link>
             <template v-if="$page.props.auth.user">
               <Link
-                :href="route('  dashboard')"
+                :href="route('dashboard')"
                 class="text-gray-600 hover:text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
                 @click="isMobileMenuOpen = false"
               >

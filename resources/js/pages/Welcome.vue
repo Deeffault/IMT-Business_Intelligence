@@ -7,9 +7,9 @@ import { Menu, X } from 'lucide-vue-next';
 
 // Animation des statistiques
 const stats = ref([
-  { id: 1, name: 'Entreprises Évaluées', value: 0, target: 50000, suffix: '+' },
-  { id: 2, name: 'Sources de Données', value: 0, target: 25, suffix: '+' },
-  { id: 3, name: 'Indicateurs RSE', value: 0, target: 150, suffix: '+' }
+  { id: 1, name: 'Companies Assessed', value: 0, target: 50000, suffix: '+' },
+  { id: 2, name: 'Data Sources', value: 0, target: 25, suffix: '+' },
+  { id: 3, name: 'CSR Indicators', value: 0, target: 150, suffix: '+' }
 ]);
 
 const isVisible = ref(false);
@@ -38,42 +38,42 @@ const animateValue = (stat: any, target: number, duration: number) => {
 
 const features = [
   {
-    name: 'Scoring RSE en Temps Réel',
-    description: 'Obtenez instantanément des scores de durabilité complets basés sur les critères environnementaux, sociaux et de gouvernance.',
+    name: 'Real-time CSR Scoring',
+    description: 'Get instant comprehensive sustainability scores based on environmental, social and governance criteria.',
     icon: BarChart3Icon,
     color: 'bg-emerald-500'
   },
   {
-    name: 'Filtrage Avancé',
-    description: 'Filtrez et comparez les entreprises par secteur, taille, localisation et critères de durabilité spécifiques.',
+    name: 'Advanced Filtering',
+    description: 'Filter and compare companies by sector, size, location and specific sustainability criteria.',
     icon: FilterIcon,
-    color: 'bg-blue-500'
+    color: 'bg-cyan-500'
   },
   {
-    name: 'Rapports Détaillés',
-    description: 'Accédez à des rapports de durabilité complets avec des insights actionnables et des recommandations d\'amélioration.',
+    name: 'Detailed Reports',
+    description: 'Access comprehensive sustainability reports with actionable insights and improvement recommendations.',
     icon: FileTextIcon,
-    color: 'bg-purple-500'
+    color: 'bg-emerald-600'
   },
   {
-    name: 'Sources Vérifiées',
-    description: 'Toutes les données proviennent de bases gouvernementales officielles, rapports CSRD et sources publiques vérifiées.',
+    name: 'Verified Sources',
+    description: 'All data comes from official government databases, CSRD reports and verified public sources.',
     icon: ShieldCheckIcon,
-    color: 'bg-orange-500'
+    color: 'bg-cyan-600'
   }
 ];
 
 const testimonials = [
   {
-    body: "EcoScope nous a aidés à identifier rapidement les entreprises les plus durables pour nos investissements. Un outil indispensable pour l'ESG.",
+    body: "EcoScope helped us quickly identify the most sustainable companies for our investments. An essential tool for ESG.",
     author: {
       name: 'Marie Dubois',
-      handle: 'Directrice RSE, Green Capital',
+      handle: 'CSR Director, Green Capital',
       imageUrl: 'https://picsum.photos/id/64/100/100'
     }
   },
   {
-    body: "La transparence des données et la facilité d'utilisation font d'EcoScope notre référence pour évaluer la performance RSE de nos partenaires.",
+    body: "The data transparency and ease of use make EcoScope our reference for evaluating the CSR performance of our partners.",
     author: {
       name: 'Thomas Martin',
       handle: 'CEO, EcoTech Solutions',

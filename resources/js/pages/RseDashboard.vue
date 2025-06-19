@@ -2,8 +2,9 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
-import { Line, Bar, Doughnut } from 'vue-chartjs';
+import { computed, ref } from 'vue';
+import { Bar, Doughnut } from 'vue-chartjs';
+import { TrendingUpIcon, BuildingIcon, BarChart3Icon, StarIcon, AlertTriangleIcon } from 'lucide-vue-next';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -61,20 +62,23 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-// Configuration des graphiques
+const searchQuery = ref('');
+
+// Enhanced chart configurations with your color scheme
 const scoreDistributionChart = computed(() => ({
   labels: Object.keys(props.scoreDistribution),
   datasets: [
     {
-      label: 'Nombre d\'entreprises',
+      label: 'Number of companies',
       data: Object.values(props.scoreDistribution),
       backgroundColor: [
-        '#10B981', // Vert pour excellent
-        '#F59E0B', // Jaune pour bon
-        '#F97316', // Orange pour moyen
-        '#EF4444', // Rouge pour faible
+        '#10B981', // Emerald for excellent
+        '#06B6D4', // Cyan for good
+        '#F59E0B', // Amber for average
+        '#EF4444', // Red for poor
       ],
       borderWidth: 0,
+      hoverOffset: 4,
     },
   ],
 }));
@@ -83,11 +87,13 @@ const sectorPerformanceChart = computed(() => ({
   labels: props.sectorPerformance.map(s => s.sector),
   datasets: [
     {
-      label: 'Score moyen RSE',
+      label: 'Average CSR Score',
       data: props.sectorPerformance.map(s => s.avg_score),
-      backgroundColor: '#3B82F6',
-      borderColor: '#1D4ED8',
-      borderWidth: 1,
+      backgroundColor: 'rgba(6, 182, 212, 0.8)', // Cyan with transparency
+      borderColor: '#0891B2',
+      borderWidth: 2,
+      borderRadius: 6,
+      borderSkipped: false,
     },
   ],
 }));
@@ -98,12 +104,38 @@ const chartOptions = {
   plugins: {
     legend: {
       position: 'top' as const,
+      labels: {
+        usePointStyle: true,
+        padding: 20,
+        font: {
+          size: 12,
+          weight: 'bold', // Changed from '500' to 'bold' to match allowed values
+        },
+      },
     },
   },
   scales: {
     y: {
       beginAtZero: true,
       max: 100,
+      grid: {
+        color: 'rgba(0, 0, 0, 0.05)',
+      },
+      ticks: {
+        font: {
+          size: 11,
+        },
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+      ticks: {
+        font: {
+          size: 11,
+        },
+      },
     },
   },
 };
@@ -114,206 +146,247 @@ const doughnutOptions = {
   plugins: {
     legend: {
       position: 'bottom' as const,
+      labels: {
+        usePointStyle: true,
+        padding: 15,
+        font: {
+          size: 12,
+          weight: 'bold', // Changed from '500' to 'bold' to match allowed values
+        },
+      },
     },
   },
+  cutout: '60%',
 };
 
-// Fonction pour obtenir la couleur selon la note
+// Enhanced rating colors with your color scheme
 const getRatingColor = (letter: string) => {
   const colors = {
-    'A+': 'text-green-600 bg-green-100',
-    'A': 'text-green-500 bg-green-50',
-    'B': 'text-yellow-500 bg-yellow-50',
-    'C': 'text-orange-500 bg-orange-50',
-    'D': 'text-red-500 bg-red-50',
-    'E': 'text-red-600 bg-red-100',
+    'A+': 'text-emerald-700 bg-emerald-100 border-emerald-200',
+    'A': 'text-emerald-600 bg-emerald-50 border-emerald-200',
+    'B': 'text-cyan-600 bg-cyan-50 border-cyan-200',
+    'C': 'text-yellow-600 bg-yellow-50 border-yellow-200',
+    'D': 'text-orange-600 bg-orange-50 border-orange-200',
+    'E': 'text-red-700 bg-red-100 border-red-200',
   };
-  return colors[letter as keyof typeof colors] || 'text-gray-500 bg-gray-50';
+  return colors[letter as keyof typeof colors] || 'text-gray-600 bg-gray-50 border-gray-200';
+};
+
+const handleSearch = () => {
+  console.log('Searching for:', searchQuery.value);
+  // Implement search functionality
 };
 </script>
 
 <template>
-  <Head title="CSR Dashboard - EcoScope" />
+  <Head title="CSR Dashboard - EcoScope">
+    <meta name="description" content="Corporate Sustainability Assessment Dashboard - Discover the sustainability performance of French companies with detailed CSR scores and analytics." />
+  </Head>
 
   <AppLayout :breadcrumbs="breadcrumbs">
-    <div class="space-y-6">
-      <!-- En-tête -->
-      <div class="bg-white rounded-lg shadow p-6">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">
-          Corporate Sustainability Assessment
-        </h1>
-        <p class="text-gray-600">
-          Discover the sustainability performance of French companies
-        </p>
-      </div>
-
-      <!-- Métriques principales -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                </svg>
-              </div>
-            </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  Entreprises évaluées
-                </dt>
-                <dd class="text-lg font-medium text-gray-900">
-                  {{ props.stats.total_companies.toLocaleString() }}
-                </dd>
-              </dl>
-            </div>
+    <div class="space-y-8">
+      <!-- Enhanced Header -->
+      <div class="bg-gradient-to-r from-emerald-50 via-white to-cyan-50 rounded-2xl shadow-lg border border-gray-200/20 p-8">
+        <div class="flex items-center space-x-4 mb-4">
+          <div class="h-12 w-12 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-xl flex items-center justify-center">
+            <TrendingUpIcon class="h-7 w-7 text-white" />
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
+              Corporate Sustainability Assessment
+            </h1>
+            <p class="text-gray-600 mt-1">
+              Discover the sustainability performance of French companies based on official data sources
+            </p>
           </div>
         </div>
-
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                </svg>
-              </div>
-            </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  Score moyen
-                </dt>
-                <dd class="text-lg font-medium text-gray-900">
-                  {{ Math.round(props.stats.avg_global_score) }}/100
-                </dd>
-              </dl>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <div class="w-8 h-8 bg-emerald-500 rounded-md flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-              </div>
-            </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  Performers (80+)
-                </dt>
-                <dd class="text-lg font-medium text-gray-900">
-                  {{ props.stats.top_performers }}
-                </dd>
-              </dl>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow p-6">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <div class="w-8 h-8 bg-red-500 rounded-md flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                </svg>
-              </div>
-            </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  À améliorer (&lt;60)
-                </dt>
-                <dd class="text-lg font-medium text-gray-900">
-                  {{ props.stats.need_improvement }}
-                </dd>
-              </dl>
-            </div>
-          </div>
+        <div class="flex items-center space-x-2 text-sm text-gray-500">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-medium">
+            CSRD 2024 Compliant
+          </span>
+          <span>•</span>
+          <span>Real-time data from ADEME, Data.gouv.fr, INSEE</span>
         </div>
       </div>
 
-      <!-- Graphiques -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Enhanced Metrics -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-6 hover:shadow-xl transition-all duration-300">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center">
+                <BuildingIcon class="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <div class="ml-4 flex-1">
+              <dt class="text-sm font-medium text-gray-600">
+                Companies Assessed
+              </dt>
+              <dd class="text-2xl font-bold text-gray-900 mt-1">
+                {{ props.stats.total_companies.toLocaleString() }}
+              </dd>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-6 hover:shadow-xl transition-all duration-300">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                <BarChart3Icon class="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <div class="ml-4 flex-1">
+              <dt class="text-sm font-medium text-gray-600">
+                Average Score
+              </dt>
+              <dd class="text-2xl font-bold text-gray-900 mt-1">
+                {{ Math.round(props.stats.avg_global_score) }}/100
+              </dd>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-6 hover:shadow-xl transition-all duration-300">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                <StarIcon class="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <div class="ml-4 flex-1">
+              <dt class="text-sm font-medium text-gray-600">
+                Top Performers (80+)
+              </dt>
+              <dd class="text-2xl font-bold text-gray-900 mt-1">
+                {{ props.stats.top_performers }}
+              </dd>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-6 hover:shadow-xl transition-all duration-300">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                <AlertTriangleIcon class="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <div class="ml-4 flex-1">
+              <dt class="text-sm font-medium text-gray-600">
+                Need Improvement (&lt;60)
+              </dt>
+              <dd class="text-2xl font-bold text-gray-900 mt-1">
+                {{ props.stats.need_improvement }}
+              </dd>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Enhanced Charts -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Distribution des scores -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">
-            Distribution des scores RSE
-          </h3>
-          <div class="h-64">
+        <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
+          <div class="flex items-center space-x-3 mb-6">
+            <div class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
+              <TrendingUpIcon class="h-4 w-4 text-white" />
+            </div>
+            <h3 class="text-xl font-bold text-gray-900">
+              CSR Score Distribution
+            </h3>
+          </div>
+          <div class="h-80">
             <Doughnut :data="scoreDistributionChart" :options="doughnutOptions" />
           </div>
         </div>
 
         <!-- Performance par secteur -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">
-            Performance moyenne par secteur
-          </h3>
-          <div class="h-64">
+        <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
+          <div class="flex items-center space-x-3 mb-6">
+            <div class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
+              <BarChart3Icon class="h-4 w-4 text-white" />
+            </div>
+            <h3 class="text-xl font-bold text-gray-900">
+              Average Performance by Sector
+            </h3>
+          </div>
+          <div class="h-80">
             <Bar :data="sectorPerformanceChart" :options="chartOptions" />
           </div>
         </div>
       </div>
 
-      <!-- Top des entreprises -->
-      <div class="bg-white rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">
-            Meilleures performances RSE
-          </h3>
+      <!-- Enhanced Top Companies Table -->
+      <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 overflow-hidden">
+        <div class="px-8 py-6 border-b border-gray-200/50 bg-gradient-to-r from-emerald-50 to-cyan-50">
+          <div class="flex items-center space-x-3">
+            <div class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
+              <StarIcon class="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-900">
+                Top CSR Performers
+              </h3>
+              <p class="text-gray-600 text-sm mt-1">Companies leading in sustainability practices</p>
+            </div>
+          </div>
         </div>
-        <div class="overflow-hidden">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200/50">
+            <thead class="bg-gray-50/50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Entreprise
+                <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Company
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Secteur
+                <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Sector
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Score
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Note
+                <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Rating
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="company in props.topCompanies" :key="company.id">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">
+            <tbody class="bg-white/50 divide-y divide-gray-200/30">
+              <tr v-for="company in props.topCompanies" :key="company.id" class="hover:bg-gray-50/50 transition-colors duration-200">
+                <td class="px-8 py-4 whitespace-nowrap">
+                  <div class="text-sm font-semibold text-gray-900">
                     {{ company.name }}
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">
+                <td class="px-8 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-600">
                     {{ company.sector }}
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">
+                <td class="px-8 py-4 whitespace-nowrap">
+                  <div class="text-sm font-medium text-gray-900 mb-1">
                     {{ Math.round(company.global_score) }}/100
                   </div>
+                  <div class="w-20 bg-gray-200 rounded-full h-2">
+                    <div 
+                      class="bg-gradient-to-r from-emerald-500 to-cyan-500 h-2 rounded-full transition-all duration-500"
+                      :style="`width: ${company.global_score}%`"
+                    ></div>
+                  </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" :class="getRatingColor(company.rating_letter)">
+                <td class="px-8 py-4 whitespace-nowrap">
+                  <span 
+                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border"
+                    :class="getRatingColor(company.rating_letter)"
+                  >
                     {{ company.rating_letter }}
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <a :href="`/rse/company/${company.id}`" class="text-indigo-600 hover:text-indigo-900">
-                    Voir détails
+                <td class="px-8 py-4 whitespace-nowrap text-sm font-medium">
+                  <a :href="`/rse/company/${company.id}`" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
+                    View Details →
                   </a>
                 </td>
               </tr>
@@ -322,21 +395,34 @@ const getRatingColor = (letter: string) => {
         </div>
       </div>
 
-      <!-- Barre de recherche -->
-      <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">
-          Rechercher une entreprise
-        </h3>
-        <div class="flex space-x-4">
+      <!-- Enhanced Search Section -->
+      <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
+        <div class="flex items-center space-x-3 mb-6">
+          <div class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
+            <TrendingUpIcon class="h-4 w-4 text-white" />
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-gray-900">
+              Search for a Company
+            </h3>
+            <p class="text-gray-600 text-sm mt-1">Find detailed CSR assessment for any French company</p>
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-4">
           <div class="flex-1">
             <input
+              v-model="searchQuery"
               type="text"
-              placeholder="Nom de l'entreprise ou SIREN..."
-              class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Company name or SIREN number..."
+              class="block w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 transition-colors duration-200"
+              @keyup.enter="handleSearch"
             />
           </div>
-          <button class="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            Rechercher
+          <button 
+            @click="handleSearch"
+            class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-emerald-600 to-cyan-600 px-8 py-3 text-sm font-semibold text-white shadow-lg hover:from-emerald-700 hover:to-cyan-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-all duration-200"
+          >
+            Search Company
           </button>
         </div>
       </div>

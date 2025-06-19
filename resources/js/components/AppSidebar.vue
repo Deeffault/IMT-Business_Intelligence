@@ -5,12 +5,11 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Newspaper } from 'lucide-vue-next';
-import AppLogo from './AppLogo.vue';
+import { BookOpen, LayoutGrid, Newspaper, TrendingUpIcon } from 'lucide-vue-next';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'CSR Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
     },
@@ -23,13 +22,13 @@ const mainNavItems: NavItem[] = [
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Github Repo',
+        title: 'EcoScope Repository',
         href: 'https://github.com/Deeffault/IMT-Business_Intelligence',
-        icon: Folder,
+        icon: BookOpen,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
+        title: 'CSR Documentation',
+        href: 'https://csrd.efrag.org/',
         icon: BookOpen,
     },
 ];
@@ -42,7 +41,12 @@ const footerNavItems: NavItem[] = [
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
                         <Link :href="route('dashboard')">
-                            <AppLogo />
+                            <div class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                                <TrendingUpIcon class="h-5 w-5 text-white" />
+                            </div>
+                            <span class="text-xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
+                                EcoScope
+                            </span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
