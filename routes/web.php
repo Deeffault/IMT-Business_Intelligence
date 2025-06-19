@@ -27,6 +27,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/rse/company/{company}/refresh', [RseDashboardController::class, 'refreshScore'])->name('rse.company.refresh');
 });
 
+// Affichage de toutes les entreprises avec filtres et pagination
+Route::get('/rse/companies', [RseDashboardController::class, 'companiesTable'])->name('rse.companies');
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
 require __DIR__.'/auth.php';

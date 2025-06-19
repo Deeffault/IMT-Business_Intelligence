@@ -31,6 +31,15 @@ ChartJS.register(
   Legend
 );
 
+interface TopCompany {
+  id: number;
+  name: string;
+  sector: string;
+  global_score: number;
+  rating_letter: string;
+  display_rank?: number;
+}
+
 interface Props {
   stats: {
     total_companies: number;
@@ -38,13 +47,7 @@ interface Props {
     top_performers: number;
     need_improvement: number;
   };
-  topCompanies: Array<{
-    id: number;
-    name: string;
-    sector: string;
-    global_score: number;
-    rating_letter: string;
-  }>;
+  topCompanies: TopCompany[];
   scoreDistribution: Record<string, number>;
   sectorPerformance: Array<{
     sector: string;
@@ -392,6 +395,12 @@ const getSortIcon = (column: string) => {
                   class="h-4 w-4 text-gray-600"
                 />
               </button>
+              <button
+                class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-600 to-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow hover:from-emerald-700 hover:to-cyan-700 transition-all ml-4"
+                @click="() => router.get('/rse/companies')"
+              >
+                See All Companies
+              </button>
             </div>
           </div>
         </div>
@@ -399,65 +408,26 @@ const getSortIcon = (column: string) => {
           <table class="min-w-full divide-y divide-gray-200/50">
             <thead class="bg-gray-50/50">
               <tr>
-                <th class="px-8 py-4 text-left">
-                  <button 
-                    @click="handleSort('name')"
-                    class="flex items-center space-x-1 text-xs font-semibold text-gray-600 uppercase tracking-wider hover:text-emerald-600 transition-colors"
-                  >
-                    <span>Company</span>
-                    <component 
-                      v-if="getSortIcon('name')" 
-                      :is="getSortIcon('name')" 
-                      class="h-3 w-3"
-                    />
-                  </button>
-                </th>
-                <th class="px-8 py-4 text-left">
-                  <button 
-                    @click="handleSort('sector')"
-                    class="flex items-center space-x-1 text-xs font-semibold text-gray-600 uppercase tracking-wider hover:text-emerald-600 transition-colors"
-                  >
-                    <span>Sector</span>
-                    <component 
-                      v-if="getSortIcon('sector')" 
-                      :is="getSortIcon('sector')" 
-                      class="h-3 w-3"
-                    />
-                  </button>
-                </th>
-                <th class="px-8 py-4 text-left">
-                  <button 
-                    @click="handleSort('global_score')"
-                    class="flex items-center space-x-1 text-xs font-semibold text-gray-600 uppercase tracking-wider hover:text-emerald-600 transition-colors"
-                  >
-                    <span>Score</span>
-                    <component 
-                      v-if="getSortIcon('global_score')" 
-                      :is="getSortIcon('global_score')" 
-                      class="h-3 w-3"
-                    />
-                  </button>
-                </th>
-                <th class="px-8 py-4 text-left">
-                  <button 
-                    @click="handleSort('rating_letter')"
-                    class="flex items-center space-x-1 text-xs font-semibold text-gray-600 uppercase tracking-wider hover:text-emerald-600 transition-colors"
-                  >
-                    <span>Rating</span>
-                    <component 
-                      v-if="getSortIcon('rating_letter')" 
-                      :is="getSortIcon('rating_letter')" 
-                      class="h-3 w-3"
-                    />
-                  </button>
+                <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  #
                 </th>
                 <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Actions
+                  Company
+                </th>
+                <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Sector
+                </th>
+                <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Score
+                </th>
+                <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Rating
                 </th>
               </tr>
             </thead>
             <tbody class="bg-white/50 divide-y divide-gray-200/30">
               <tr v-for="company in props.topCompanies" :key="company.id" class="hover:bg-gray-50/50 transition-colors duration-200">
+                <td class="px-8 py-4 whitespace-nowrap font-bold text-gray-700">{{ company.display_rank ?? '-' }}</td>
                 <td class="px-8 py-4 whitespace-nowrap">
                   <div class="text-sm font-semibold text-gray-900">
                     {{ company.name }}
@@ -486,11 +456,6 @@ const getSortIcon = (column: string) => {
                   >
                     {{ company.rating_letter }}
                   </span>
-                </td>
-                <td class="px-8 py-4 whitespace-nowrap text-sm font-medium">
-                  <a :href="`/rse/company/${company.id}`" class="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors duration-200">
-                    View Details →
-                  </a>
                 </td>
               </tr>
             </tbody>

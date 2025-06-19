@@ -19,17 +19,17 @@ class RseDashboardController extends Controller
     {
         $sortBy = $request->get('sort', 'global_score');
         $sortOrder = $request->get('order', 'desc');
-        
+
         // Validate sort parameters
         $allowedSortFields = ['name', 'sector', 'global_score', 'rating_letter'];
         $allowedSortOrders = ['asc', 'desc'];
-        
+
         $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'global_score';
         $sortOrder = in_array($sortOrder, $allowedSortOrders) ? $sortOrder : 'desc';
 
         // Only calculate stats if not a partial reload
         $stats = [];
-        if (!$request->header('X-Inertia-Partial-Data') || in_array('stats', explode(',', $request->header('X-Inertia-Partial-Data')))) {
+        if (! $request->header('X-Inertia-Partial-Data') || in_array('stats', explode(',', $request->header('X-Inertia-Partial-Data')))) {
             $stats = [
                 'total_companies' => Company::count(),
                 'avg_global_score' => RseScore::avg('global_score') ?? 0,
@@ -54,14 +54,26 @@ class RseDashboardController extends Controller
             $topCompaniesQuery->orderBy($sortBy, $sortOrder);
         }
 
+        // Générer le classement global une fois pour toutes les companies avec un score
+        $allRanked = Company::with('rseScore')
+            ->whereHas('rseScore')
+            ->get()
+            ->sortByDesc(fn ($c) => $c->rseScore->global_score ?? 0)
+            ->values();
+        $rankMap = [];
+        foreach ($allRanked as $idx => $company) {
+            $rankMap[$company->id] = $idx + 1;
+        }
+
         $topCompanies = $topCompaniesQuery
             ->take(20)
             ->get()
-            ->map(function ($company) {
+            ->map(function ($company) use ($rankMap) {
                 return [
                     'id' => $company->id,
                     'name' => $company->name,
                     'sector' => $company->sector,
+                    'display_rank' => $rankMap[$company->id] ?? null,
                     'global_score' => $company->rseScore->global_score,
                     'rating_letter' => $company->rseScore->rating_letter,
                 ];
@@ -70,11 +82,11 @@ class RseDashboardController extends Controller
         // Only calculate charts data if not a partial reload or if explicitly requested
         $scoreDistribution = [];
         $sectorPerformance = [];
-        
-        if (!$request->header('X-Inertia-Partial-Data') || 
+
+        if (! $request->header('X-Inertia-Partial-Data') ||
             in_array('scoreDistribution', explode(',', $request->header('X-Inertia-Partial-Data'))) ||
             in_array('sectorPerformance', explode(',', $request->header('X-Inertia-Partial-Data')))) {
-            
+
             $scoreDistribution = RseScore::selectRaw('
                 CASE 
                     WHEN global_score >= 80 THEN "Excellent (80-100)"
@@ -128,7 +140,7 @@ class RseDashboardController extends Controller
         // Validate sort parameters
         $allowedSortFields = ['name', 'sector', 'global_score', 'rating_letter'];
         $allowedSortOrders = ['asc', 'desc'];
-        
+
         $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'global_score';
         $sortOrder = in_array($sortOrder, $allowedSortOrders) ? $sortOrder : 'desc';
 
@@ -206,5 +218,70 @@ class RseDashboardController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function companiesTable(Request $request): Response
+    {
+        $query = $request->get('name');
+        $hasScore = $request->boolean('has_score');
+        $perPage = 25;
+
+        $companiesQuery = \App\Models\Company::query()
+            ->with('rseScore')
+            ->when($query, function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%");
+            })
+            ->when($hasScore, function ($q) {
+                $q->whereHas('rseScore');
+            });
+
+        $sortBy = $request->get('sort', 'display_rank');
+        $sortOrder = $request->get('order', 'asc');
+        $allowedSortFields = ['name', 'sector', 'global_score', 'rating_letter', 'display_rank'];
+        $allowedSortOrders = ['asc', 'desc'];
+        $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'display_rank';
+        $sortOrder = in_array($sortOrder, $allowedSortOrders) ? $sortOrder : 'asc';
+
+        // Générer le classement global une fois pour toutes les companies avec un score
+        $allRanked = Company::with('rseScore')
+            ->whereHas('rseScore')
+            ->get()
+            ->sortByDesc(fn ($c) => $c->rseScore->global_score ?? 0)
+            ->values();
+        $rankMap = [];
+        foreach ($allRanked as $idx => $company) {
+            $rankMap[$company->id] = $idx + 1;
+        }
+
+        $companies = $companiesQuery->paginate($perPage)->appends($request->all());
+
+        // Injection du classement global
+        $companies->getCollection()->map(function ($company) use ($rankMap) {
+            // Using map() instead of transform() because we're converting to array
+            return [
+                'id' => $company->id,
+                'name' => $company->name,
+                'sector' => $company->sector,
+                'display_rank' => $rankMap[$company->id] ?? null,
+                'rseScore' => [
+                    'global_score' => $company->rseScore->global_score ?? '',
+                    'rating_letter' => $company->rseScore->rating_letter ?? null,
+                ],
+            ];
+        });
+
+        // Tri côté PHP sur display_rank si demandé
+        if ($sortBy === 'display_rank') {
+            $sorted = $companies->getCollection()->sortBy('display_rank', SORT_REGULAR, $sortOrder === 'desc')->values();
+            $companies->setCollection($sorted);
+        }
+
+        return Inertia::render('CompanyTable', [
+            'companies' => $companies,
+            'filters' => [
+                'name' => $query,
+                'has_score' => $hasScore,
+            ],
+        ]);
     }
 }
