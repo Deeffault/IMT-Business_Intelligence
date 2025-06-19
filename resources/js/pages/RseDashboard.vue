@@ -81,10 +81,9 @@ const scoreDistributionChart = computed(() => ({
       label: 'Number of companies',
       data: Object.values(props.scoreDistribution),
       backgroundColor: [
-        '#10B981', // Emerald for excellent
-        '#06B6D4', // Cyan for good
-        '#F59E0B', // Amber for average
-        '#EF4444', // Red for poor
+        '#F97316', // Orange for average (50-64)
+        '#EAB308', // Yellow for good (65-79)
+        '#10B981', // Emerald for excellent (80+)
       ],
       borderWidth: 0,
       hoverOffset: 4,
@@ -181,6 +180,32 @@ const getRatingColor = (letter: string) => {
   return colors[letter as keyof typeof colors] || 'text-gray-600 bg-gray-50 border-gray-200';
 };
 
+// Function to get color based on score (green > yellow > orange > red)
+const getScoreColor = (score: number) => {
+  if (score >= 80) {
+    return 'from-emerald-500 to-emerald-600'; // Excellent (80-100)
+  } else if (score >= 65) {
+    return 'from-yellow-400 to-yellow-500'; // Good (65-79)
+  } else if (score >= 50) {
+    return 'from-orange-400 to-orange-500'; // Average (50-64)
+  } else {
+    return 'from-red-400 to-red-500'; // Poor (0-49)
+  }
+};
+
+// Function to get text color based on score
+const getScoreTextColor = (score: number) => {
+  if (score >= 80) {
+    return 'text-emerald-700'; 
+  } else if (score >= 65) {
+    return 'text-yellow-700';
+  } else if (score >= 50) {
+    return 'text-orange-700';
+  } else {
+    return 'text-red-700';
+  }
+};
+
 const handleSearch = () => {
   console.log('Searching for:', searchQuery.value);
   // Implement search functionality using Inertia
@@ -227,7 +252,7 @@ const goToCompanyDetail = (companyId: number) => {
 
   <Head title="CSR Dashboard - EcoScope">
     <meta name="description"
-      content="Corporate Sustainability Assessment Dashboard - Discover the sustainability performance of French companies with detailed CSR scores and analytics." />
+      content="Corporate Sustainability Assessment Dashboard - Discover the sustainability performance of companies with detailed CSR scores and analytics." />
   </Head>
 
   <AppLayout :breadcrumbs="breadcrumbs">
@@ -245,7 +270,7 @@ const goToCompanyDetail = (companyId: number) => {
               Corporate Sustainability Assessment
             </h1>
             <p class="text-gray-600 mt-1">
-              Discover the sustainability performance of French companies based on official data sources
+              Discover the sustainability performance of companies based on official data sources
             </p>
           </div>
         </div>
@@ -450,12 +475,13 @@ const goToCompanyDetail = (companyId: number) => {
                   </div>
                 </td>
                 <td class="px-8 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900 mb-1">
+                  <div class="text-sm font-medium mb-1" :class="getScoreTextColor(company.global_score)">
                     {{ Math.round(company.global_score) }}/100
                   </div>
                   <div class="w-20 bg-gray-200 rounded-full h-2">
                     <div
-                      class="bg-gradient-to-r from-emerald-500 to-cyan-500 h-2 rounded-full transition-all duration-500"
+                      class="bg-gradient-to-r h-2 rounded-full transition-all duration-500"
+                      :class="getScoreColor(company.global_score)"
                       :style="`width: ${company.global_score}%`"></div>
                   </div>
                 </td>

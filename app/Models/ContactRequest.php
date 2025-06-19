@@ -29,17 +29,17 @@ class ContactRequest extends Model
         'current_score' => 'decimal:2',
     ];
 
-public function getCompanySizeLabel(): string
-{
-    return match ($this->company_size) {
-        'startup' => 'Startup (1-10 employés)',
-        'small' => 'Petite entreprise (11-50 employés)',
-        'medium' => 'Moyenne entreprise (51-250 employés)',
-        'large' => 'Grande entreprise (250+ employés)',
-        'micro' => 'Micro entreprise (< 10 employés)',
-        default => (string) $this->company_size,
-    };
-}
+    public function getCompanySizeLabel(): string
+    {
+        return match ($this->company_size) {
+            'startup' => 'Startup (1-10 employés)',
+            'small' => 'Petite entreprise (11-50 employés)',
+            'medium' => 'Moyenne entreprise (51-250 employés)',
+            'large' => 'Grande entreprise (250+ employés)',
+            'micro' => 'Micro entreprise (< 10 employés)',
+            default => (string) $this->company_size,
+        };
+    }
 
     public function getBudgetRangeLabel(): string
     {

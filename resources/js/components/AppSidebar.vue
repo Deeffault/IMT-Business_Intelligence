@@ -38,7 +38,7 @@ const footerNavItems: NavItem[] = [
     },
     {
         title: 'CSR Documentation',
-        href: 'https://csrd.efrag.org/',
+        href: '/documentation',
         icon: BookOpen,
     },
 ];

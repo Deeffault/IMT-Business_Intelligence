@@ -7,7 +7,7 @@ import { Menu, X } from 'lucide-vue-next';
 
 // Animation des statistiques
 const stats = ref([
-  { id: 1, name: 'Companies Assessed', value: 0, target: 50000, suffix: '+' },
+  { id: 1, name: 'Companies Assessed', value: 0, target: 5000, suffix: '+' },
   { id: 2, name: 'Data Sources', value: 0, target: 25, suffix: '+' },
   { id: 3, name: 'CSR Indicators', value: 0, target: 150, suffix: '+' }
 ]);
@@ -87,7 +87,7 @@ const testimonials = [
   <Head title="EcoScope - Transparent CSR Assessment for Companies">
     <link rel="preconnect" href="https://rsms.me/" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-    <meta name="description" content="Discover the sustainable performance of French companies. Access transparent CSR scores based on public data and help companies improve their ecological footprint." />
+    <meta name="description" content="Discover the sustainable performance of companies. Access transparent CSR scores based on public data and help companies improve their ecological footprint." />
   </Head>
   
   <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-cyan-50">
@@ -230,7 +230,7 @@ const testimonials = [
             class="mx-auto mt-6 max-w-2xl text-xl leading-8 text-gray-600 mb-10 transition-all duration-700 delay-300"
             :class="{ 'opacity-100 translate-y-0': isVisible, 'opacity-0 translate-y-8': !isVisible }"
           >
-            Discover the environmental, social and governance performance of French companies. 
+            Discover the environmental, social and governance performance of companies. 
             Our platform aggregates public data to provide transparent CSR scores and help companies improve their sustainable footprint.
           </p>
 

@@ -28,6 +28,9 @@ Route::get('/rse', [RseDashboardController::class, 'index'])->name('rse.dashboar
 Route::middleware(['auth'])->group(function () {
     Route::get('/rse/search', [RseDashboardController::class, 'search'])->name('rse.search');
     Route::get('/rse/company/{company}', [RseDashboardController::class, 'show'])->name('rse.company.show');
+    Route::get('/documentation', function () {
+        return Inertia::render('Documentation');
+    })->name('documentation');
 });
 
 // Affichage de toutes les entreprises avec filtres et pagination

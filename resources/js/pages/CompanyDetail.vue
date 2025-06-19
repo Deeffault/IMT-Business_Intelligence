@@ -251,9 +251,9 @@ const historicalData = computed(() => {
     const currentEnvScore = props.company.rseScore?.environmental_score || 50;
     const years = ['2020', '2021', '2022', '2023', '2024'];
 
-    // Générer une progression logique vers le score actuel
+    // Generate logical progression toward current score
     const globalProgression = years.map((_, i) => {
-        const baseScore = currentGlobalScore - (4 - i) * 3; // Progression de 3 points par an
+        const baseScore = currentGlobalScore - (4 - i) * 3; // 3 points progression per year
         return Math.max(20, Math.min(100, generateCoherentVariation(baseScore, 4)));
     });
 
@@ -544,8 +544,8 @@ const doughnutOptions = {
     cutout: '60%',
 };
 </script>
-<template>
 
+<template>
     <Head :title="`${company.name} - Company Details`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
@@ -553,7 +553,7 @@ const doughnutOptions = {
             <!-- Back Button -->
             <div class="flex items-center space-x-4">
                 <Link href="/rse/companies"
-                    class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+                    class="inline-flex items-center gap-2 text-gray-600 hover:text-emerald-600 transition-colors">
                 <ArrowLeftIcon class="w-4 h-4" />
                 Back to Companies
                 </Link>
@@ -561,7 +561,7 @@ const doughnutOptions = {
 
             <!-- Company Header -->
             <div
-                class="bg-gradient-to-r from-emerald-50 via-white to-cyan-50 rounded-2xl shadow-lg border border-gray-200/20 p-8">
+                class="bg-gradient-to-r from-emerald-50 via-white to-cyan-50 rounded-2xl shadow-lg border border-emerald-200/30 p-8">
                 <div class="flex items-start justify-between">
                     <div class="flex items-start space-x-6">
                         <div
@@ -610,7 +610,7 @@ const doughnutOptions = {
                     </div>
                 </div>
 
-                <div v-if="company.description" class="mt-6 p-4 bg-white/50 rounded-xl">
+                <div v-if="company.description" class="mt-6 p-4 bg-white/50 rounded-xl border border-emerald-100">
                     <p class="text-gray-700">{{ company.description }}</p>
                 </div>
             </div>
@@ -619,7 +619,7 @@ const doughnutOptions = {
             <div v-if="company.rseScore" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Score Breakdown -->
                 <div
-                    class="lg:col-span-2 bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
+                    class="lg:col-span-2 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100 p-8">
                     <div class="flex items-center space-x-3 mb-6">
                         <div
                             class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
@@ -630,7 +630,7 @@ const doughnutOptions = {
 
                     <div class="grid grid-cols-2 gap-6 mb-8">
                         <div class="space-y-4">
-                            <div class="flex items-center justify-between p-4 bg-emerald-50 rounded-xl">
+                            <div class="flex items-center justify-between p-4 bg-emerald-50 rounded-xl border border-emerald-100">
                                 <div class="flex items-center space-x-3">
                                     <LeafIcon class="w-6 h-6 text-emerald-600" />
                                     <span class="font-medium text-gray-900">Environmental</span>
@@ -641,7 +641,7 @@ const doughnutOptions = {
                                 </span>
                             </div>
 
-                            <div class="flex items-center justify-between p-4 bg-cyan-50 rounded-xl">
+                            <div class="flex items-center justify-between p-4 bg-cyan-50 rounded-xl border border-cyan-100">
                                 <div class="flex items-center space-x-3">
                                     <HeartIcon class="w-6 h-6 text-cyan-600" />
                                     <span class="font-medium text-gray-900">Social</span>
@@ -654,7 +654,7 @@ const doughnutOptions = {
                         </div>
 
                         <div class="space-y-4">
-                            <div class="flex items-center justify-between p-4 bg-blue-50 rounded-xl">
+                            <div class="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-100">
                                 <div class="flex items-center space-x-3">
                                     <ShieldIcon class="w-6 h-6 text-blue-600" />
                                     <span class="font-medium text-gray-900">Governance</span>
@@ -665,7 +665,7 @@ const doughnutOptions = {
                                 </span>
                             </div>
 
-                            <div class="flex items-center justify-between p-4 bg-purple-50 rounded-xl">
+                            <div class="flex items-center justify-between p-4 bg-purple-50 rounded-xl border border-purple-100">
                                 <div class="flex items-center space-x-3">
                                     <ScaleIcon class="w-6 h-6 text-purple-600" />
                                     <span class="font-medium text-gray-900">Ethics</span>
@@ -680,7 +680,7 @@ const doughnutOptions = {
 
                     <!-- Overall Score -->
                     <div
-                        class="p-6 bg-gradient-to-r from-emerald-50 to-cyan-50 rounded-2xl border border-emerald-200/50">
+                        class="p-6 bg-gradient-to-r from-emerald-50 to-cyan-50 rounded-2xl border border-emerald-200">
                         <div class="flex items-center justify-between">
                             <div>
                                 <h4 class="text-lg font-semibold text-gray-900 mb-1">Overall CSR Score</h4>
@@ -702,7 +702,7 @@ const doughnutOptions = {
 
             <!-- Data Quality & Last Update -->
             <div v-if="company.rseScore" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-6">
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100 p-6">
                     <h4 class="font-semibold text-gray-900 mb-3">Last Updated</h4>
                     <div class="flex items-center space-x-2 text-gray-600">
                         <CalendarIcon class="w-4 h-4" />
@@ -714,7 +714,7 @@ const doughnutOptions = {
 
             <!-- Similar Companies -->
             <div v-if="similarCompanies.length > 0"
-                class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
+                class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100 p-8">
                 <div class="flex items-center space-x-3 mb-6">
                     <div
                         class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
@@ -725,7 +725,7 @@ const doughnutOptions = {
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <Link v-for="similar in similarCompanies" :key="similar.id" :href="`/rse/company/${similar.id}`"
-                        class="p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors border border-gray-200 hover:border-emerald-300">
+                        class="p-4 bg-gray-50 hover:bg-emerald-50 rounded-xl transition-colors border border-gray-200 hover:border-emerald-300">
                     <div class="flex items-center justify-between">
                         <div>
                             <h4 class="font-medium text-gray-900 mb-1">{{ similar.name }}</h4>
@@ -748,7 +748,7 @@ const doughnutOptions = {
             <!-- Enhanced KPI Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div v-for="kpi in kpiData" :key="kpi.title"
-                    class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-6 hover:shadow-xl transition-all duration-300">
+                    class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100 p-6 hover:shadow-xl transition-all duration-300">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-600 mb-1">{{ kpi.title }}</p>
@@ -761,7 +761,7 @@ const doughnutOptions = {
                                 </span>
                             </div>
                         </div>
-                        <div :class="`w-12 h-12 bg-${kpi.color}-100 rounded-xl flex items-center justify-center`">
+                        <div :class="`w-12 h-12 bg-${kpi.color}-100 rounded-xl flex items-center justify-center border border-${kpi.color}-200`">
                             <component :is="kpi.icon" :class="`w-6 h-6 text-${kpi.color}-600`" />
                         </div>
                     </div>
@@ -771,7 +771,7 @@ const doughnutOptions = {
             <!-- Performance Metrics Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- Environmental Metrics -->
-                <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100 p-8">
                     <div class="flex items-center space-x-3 mb-6">
                         <div
                             class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
@@ -781,7 +781,7 @@ const doughnutOptions = {
                     </div>
 
                     <div class="space-y-4">
-                        <div class="flex items-center justify-between p-4 bg-emerald-50 rounded-xl">
+                        <div class="flex items-center justify-between p-4 bg-emerald-50 rounded-xl border border-emerald-100">
                             <div class="flex items-center space-x-3">
                                 <Recycle class="w-5 h-5 text-emerald-600" />
                                 <span class="font-medium text-gray-900">Carbon Footprint Reduction</span>
@@ -796,7 +796,7 @@ const doughnutOptions = {
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-between p-4 bg-cyan-50 rounded-xl">
+                        <div class="flex items-center justify-between p-4 bg-cyan-50 rounded-xl border border-cyan-100">
                             <div class="flex items-center space-x-3">
                                 <Zap class="w-5 h-5 text-cyan-600" />
                                 <span class="font-medium text-gray-900">Energy Efficiency</span>
@@ -811,7 +811,7 @@ const doughnutOptions = {
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-between p-4 bg-blue-50 rounded-xl">
+                        <div class="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-100">
                             <div class="flex items-center space-x-3">
                                 <Target class="w-5 h-5 text-blue-600" />
                                 <span class="font-medium text-gray-900">Waste Reduction</span>
@@ -829,47 +829,47 @@ const doughnutOptions = {
                 </div>
 
                 <!-- Social Metrics -->
-                <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-cyan-100 p-8">
                     <div class="flex items-center space-x-3 mb-6">
                         <div
-                            class="h-8 w-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                            class="h-8 w-8 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg flex items-center justify-center">
                             <HeartIcon class="h-4 w-4 text-white" />
                         </div>
                         <h3 class="text-xl font-bold text-gray-900">Social Impact</h3>
                     </div>
 
                     <div class="space-y-4">
-                        <div class="flex items-center justify-between p-4 bg-purple-50 rounded-xl">
+                        <div class="flex items-center justify-between p-4 bg-cyan-50 rounded-xl border border-cyan-100">
                             <div class="flex items-center space-x-3">
-                                <Users2 class="w-5 h-5 text-purple-600" />
+                                <Users2 class="w-5 h-5 text-cyan-600" />
                                 <span class="font-medium text-gray-900">Employee Satisfaction</span>
                             </div>
                             <div class="text-right">
-                                <div class="text-lg font-bold text-purple-600">{{
+                                <div class="text-lg font-bold text-cyan-600">{{
                                     performanceMetrics.employeeSatisfaction }}%</div>
-                                <div class="w-20 bg-purple-200 rounded-full h-2 mt-1">
-                                    <div class="bg-purple-500 h-2 rounded-full"
+                                <div class="w-20 bg-cyan-200 rounded-full h-2 mt-1">
+                                    <div class="bg-cyan-500 h-2 rounded-full"
                                         :style="`width: ${performanceMetrics.employeeSatisfaction}%`"></div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-between p-4 bg-pink-50 rounded-xl">
+                        <div class="flex items-center justify-between p-4 bg-emerald-50 rounded-xl border border-emerald-100">
                             <div class="flex items-center space-x-3">
-                                <Award class="w-5 h-5 text-pink-600" />
+                                <Award class="w-5 h-5 text-emerald-600" />
                                 <span class="font-medium text-gray-900">Diversity Index</span>
                             </div>
                             <div class="text-right">
-                                <div class="text-lg font-bold text-pink-600">{{ performanceMetrics.diversityIndex }}%
+                                <div class="text-lg font-bold text-emerald-600">{{ performanceMetrics.diversityIndex }}%
                                 </div>
-                                <div class="w-20 bg-pink-200 rounded-full h-2 mt-1">
-                                    <div class="bg-pink-500 h-2 rounded-full"
+                                <div class="w-20 bg-emerald-200 rounded-full h-2 mt-1">
+                                    <div class="bg-emerald-500 h-2 rounded-full"
                                         :style="`width: ${performanceMetrics.diversityIndex}%`"></div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-between p-4 bg-indigo-50 rounded-xl">
+                        <div class="flex items-center justify-between p-4 bg-indigo-50 rounded-xl border border-indigo-100">
                             <div class="flex items-center space-x-3">
                                 <Activity class="w-5 h-5 text-indigo-600" />
                                 <span class="font-medium text-gray-900">Community Impact</span>
@@ -890,7 +890,7 @@ const doughnutOptions = {
             <!-- Charts Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- Historical Performance -->
-                <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100 p-8">
                     <div class="flex items-center space-x-3 mb-6">
                         <div
                             class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
@@ -904,7 +904,7 @@ const doughnutOptions = {
                 </div>
 
                 <!-- Sector Comparison -->
-                <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-cyan-100 p-8">
                     <div class="flex items-center space-x-3 mb-6">
                         <div
                             class="h-8 w-8 bg-gradient-to-br from-cyan-500 to-emerald-600 rounded-lg flex items-center justify-center">
@@ -913,17 +913,17 @@ const doughnutOptions = {
                         <h3 class="text-xl font-bold text-gray-900">Sector Comparison</h3>
                     </div>
 
-                    <!-- Statistiques de comparaison -->
+                    <!-- Comparison statistics -->
                     <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div class="bg-emerald-50 p-3 rounded-lg">
+                        <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100">
                             <div class="text-sm text-gray-600">Your Overall Score</div>
                             <div class="font-bold text-lg text-emerald-600">
                                 {{ Math.round(company.rseScore?.global_score || 0) }}/100
                             </div>
                         </div>
-                        <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="bg-cyan-50 p-3 rounded-lg border border-cyan-100">
                             <div class="text-sm text-gray-600">Sector Average</div>
-                            <div class="font-bold text-lg text-gray-600">
+                            <div class="font-bold text-lg text-cyan-600">
                                 {{ Math.round(sectorPerformance?.average_score || 0) }}/100
                             </div>
                         </div>
@@ -933,17 +933,17 @@ const doughnutOptions = {
                         <Radar :data="sectorComparison" :options="sectorComparisonOptions" />
                     </div>
 
-                    <!-- Tableau comparatif détaillé -->
+                    <!-- Detailed comparison table -->
                     <div class="mt-6 overflow-x-auto">
                         <table class="min-w-full text-sm">
                             <thead>
                                 <tr>
-                                    <th class="text-left py-2 px-4 bg-gray-50 font-medium text-gray-600">Category</th>
+                                    <th class="text-left py-2 px-4 bg-gray-50 font-medium text-gray-600 rounded-tl-lg">Category</th>
                                     <th class="text-center py-2 px-4 bg-gray-50 font-medium text-gray-600">{{
                                         company.name }}</th>
                                     <th class="text-center py-2 px-4 bg-gray-50 font-medium text-gray-600">Sector Avg.
                                     </th>
-                                    <th class="text-center py-2 px-4 bg-gray-50 font-medium text-gray-600">Difference
+                                    <th class="text-center py-2 px-4 bg-gray-50 font-medium text-gray-600 rounded-tr-lg">Difference
                                     </th>
                                 </tr>
                             </thead>
@@ -974,10 +974,10 @@ const doughnutOptions = {
 
                 <!-- Sustainability Initiatives -->
                 <div class="grid grid-cols-1 lg:grid-cols-1 gap-8">
-                    <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
+                    <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100 p-8">
                         <div class="flex items-center space-x-3 mb-6">
                             <div
-                                class="h-8 w-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                                class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
                                 <Target class="h-4 w-4 text-white" />
                             </div>
                             <h3 class="text-lg font-bold text-gray-900">Sustainability Initiatives</h3>
@@ -987,7 +987,7 @@ const doughnutOptions = {
                                 <Doughnut :data="sustainabilityInitiatives" :options="doughnutOptions" />
                             </div>
                         </div>
-                        <!-- Ajout d'un résumé textuel -->
+                        <!-- Text summary -->
                         <div class="mt-4 text-center">
                             <div class="text-sm text-gray-600">
                                 Total: {{sustainabilityInitiatives.datasets[0].data.reduce((a, b) => a + b, 0)}}
@@ -997,17 +997,17 @@ const doughnutOptions = {
                     </div>
                 </div>
                 <div
-                    class="lg:col-span-1 bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
+                    class="lg:col-span-1 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-cyan-100 p-8">
                     <div class="flex items-center space-x-3 mb-6">
                         <div
-                            class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                            class="h-8 w-8 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg flex items-center justify-center">
                             <Award class="h-4 w-4 text-white" />
                         </div>
                         <h3 class="text-lg font-bold text-gray-900">Recent Achievements</h3>
                     </div>
 
                     <div class="space-y-4">
-                        <div class="flex items-start space-x-4 p-4 bg-emerald-50 rounded-xl">
+                        <div class="flex items-start space-x-4 p-4 bg-emerald-50 rounded-xl border border-emerald-100">
                             <div
                                 class="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
                                 <Award class="w-4 h-4 text-white" />
@@ -1022,7 +1022,7 @@ const doughnutOptions = {
                             </div>
                         </div>
 
-                        <div class="flex items-start space-x-4 p-4 bg-cyan-50 rounded-xl">
+                        <div class="flex items-start space-x-4 p-4 bg-cyan-50 rounded-xl border border-cyan-100">
                             <div
                                 class="w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center flex-shrink-0">
                                 <LeafIcon class="w-4 h-4 text-white" />
@@ -1036,7 +1036,7 @@ const doughnutOptions = {
                             </div>
                         </div>
 
-                        <div class="flex items-start space-x-4 p-4 bg-purple-50 rounded-xl">
+                        <div class="flex items-start space-x-4 p-4 bg-purple-50 rounded-xl border border-purple-100">
                             <div
                                 class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
                                 <Users2 class="w-4 h-4 text-white" />
@@ -1054,24 +1054,24 @@ const doughnutOptions = {
             </div>
 
             <!-- Call-to-Action Section for Company Improvement -->
-            <div class="mt-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
+            <div class="mt-12 bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-2xl p-8 text-white shadow-lg">
                 <div class="text-center">
                     <h3 class="text-2xl font-bold mb-4">
-                        Vous représentez {{ company.name }} ?
+                        Do you represent {{ company.name }}?
                     </h3>
-                    <p class="text-lg mb-6 text-blue-100">
-                        Améliorez votre score RSE et votre positionnement dans notre plateforme grâce à nos services d'expertise
+                    <p class="text-lg mb-6 text-emerald-100">
+                        Improve your CSR score and positioning on our platform with our expert services
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
                         <Link 
                             :href="route('contact.show')" 
-                            class="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium hover:bg-blue-50 transition-colors flex items-center"
+                            class="bg-white text-emerald-600 px-8 py-3 rounded-lg font-medium hover:bg-emerald-50 transition-colors flex items-center shadow-md"
                         >
                             <MailIcon class="w-5 h-5 mr-2" />
-                            Demander un devis personnalisé
+                            Request a Personalized Quote
                         </Link>
-                        <div class="text-blue-100 text-sm">
-                            ✓ Consultation gratuite • ✓ Stratégie sur mesure • ✓ Amélioration garantie
+                        <div class="text-emerald-100 text-sm">
+                            ✓ Free consultation • ✓ Tailored strategy • ✓ Guaranteed improvement
                         </div>
                     </div>
                 </div>

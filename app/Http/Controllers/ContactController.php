@@ -50,14 +50,14 @@ class ContactController extends Controller
             return redirect()->route('contact.show')->with('message', [
                 'type' => 'success',
                 'title' => 'Demande envoyée avec succès !',
-                'content' => 'Nous avons bien reçu votre demande d\'amélioration de score RSE. Notre équipe vous contactera dans les 24-48h pour discuter de vos besoins.'
+                'content' => 'Nous avons bien reçu votre demande d\'amélioration de score RSE. Notre équipe vous contactera dans les 24-48h pour discuter de vos besoins.',
             ]);
 
         } catch (\Exception $e) {
             return redirect()->route('contact.show')->with('error', [
                 'type' => 'error',
                 'title' => 'Erreur lors de l\'envoi',
-                'content' => 'Une erreur est survenue lors de l\'envoi de votre demande. Veuillez réessayer ou nous contacter directement.'
+                'content' => 'Une erreur est survenue lors de l\'envoi de votre demande. Veuillez réessayer ou nous contacter directement.',
             ]);
         }
     }
