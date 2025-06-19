@@ -8,13 +8,16 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/blog', function () {
+    return Inertia::render('Blog');
+})->name('blog');
 
-// Routes RSE protégées par authentification
+Route::get('dashboard', [RseDashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
+
+// Additional RSE routes for detailed functionality
 Route::middleware(['auth'])->group(function () {
-    Route::get('/rse', [RseDashboardController::class, 'index'])->name('rse.dashboard');
     Route::get('/rse/search', [RseDashboardController::class, 'search'])->name('rse.search');
     Route::get('/rse/company/{company}', [RseDashboardController::class, 'show'])->name('rse.company.show');
     Route::get('/rse/compare', [RseDashboardController::class, 'compare'])->name('rse.compare');
@@ -22,6 +25,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';
 require __DIR__.'/auth.php';
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

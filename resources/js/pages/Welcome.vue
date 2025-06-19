@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
-import { ChevronRightIcon, StarIcon, CheckIcon, ArrowRightIcon } from '@heroicons/vue/24/outline';
-import { BarChart3Icon, FilterIcon, FileTextIcon, ShieldCheckIcon, TrendingUpIcon, UsersIcon } from 'lucide-vue-next';
-import { timestamp } from '@vueuse/core';
+import { ChevronRightIcon, StarIcon, ArrowRightIcon } from '@heroicons/vue/24/outline';
+import { BarChart3Icon, FilterIcon, FileTextIcon, ShieldCheckIcon, TrendingUpIcon } from 'lucide-vue-next';
+import { Menu, X } from 'lucide-vue-next';
 
 // Animation des statistiques
 const stats = ref([
@@ -13,6 +13,7 @@ const stats = ref([
 ]);
 
 const isVisible = ref(false);
+const isMobileMenuOpen = ref(false);
 
 onMounted(() => {
   isVisible.value = true;
@@ -25,7 +26,6 @@ onMounted(() => {
 });
 
 const animateValue = (stat: any, target: number, duration: number) => {
-  const start = 0;
   const increment = target / (duration / 16);
   const timer = setInterval(() => {
     stat.value += increment;
@@ -84,10 +84,10 @@ const testimonials = [
 </script>
 
 <template>
-  <Head title="EcoScope - Évaluation RSE Transparente des Entreprises">
+  <Head title="EcoScope - Transparent CSR Assessment for Companies">
     <link rel="preconnect" href="https://rsms.me/" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-    <meta name="description" content="Découvrez les performances durables des entreprises françaises. Accédez à des scores RSE transparents basés sur des données publiques et aidez les entreprises à améliorer leur empreinte écologique." />
+    <meta name="description" content="Discover the sustainable performance of French companies. Access transparent CSR scores based on public data and help companies improve their ecological footprint." />
   </Head>
   
   <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-cyan-50">
@@ -105,10 +105,18 @@ const testimonials = [
               </h1>
             </div>
           </div>
-          <div class="flex items-center space-x-4">
+
+          <!-- Desktop Navigation -->
+          <div class="hidden md:flex items-center space-x-4">
+            <Link
+              :href="route('blog')"
+              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+            >
+              Blog
+            </Link>
             <template v-if="$page.props.auth.user">
               <Link
-                :href="route('rse.dashboard')"
+                :href="route('dashboard')"
                 class="inline-flex items-center rounded-lg border border-transparent bg-gradient-to-r from-emerald-600 to-cyan-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-emerald-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all duration-200"
               >
                 Dashboard
@@ -119,14 +127,67 @@ const testimonials = [
                 :href="route('login')"
                 class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
               >
-                Connexion
+                Sign In
               </Link>
               <Link
                 :href="route('register')"
                 class="inline-flex items-center rounded-lg border border-transparent bg-gradient-to-r from-emerald-600 to-cyan-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-emerald-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all duration-200"
               >
-                Commencer
+                Get Started
               </Link>
+            </template>
+          </div>
+
+          <!-- Mobile menu button -->
+          <div class="md:hidden">
+            <button
+              @click="isMobileMenuOpen = !isMobileMenuOpen"
+              class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-emerald-500 transition-colors duration-200"
+              aria-expanded="false"
+            >
+              <span class="sr-only">Open main menu</span>
+              <Menu v-if="!isMobileMenuOpen" class="h-6 w-6" />
+              <X v-else class="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Mobile menu -->
+        <div v-show="isMobileMenuOpen" class="md:hidden">
+          <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200/20">
+            <Link
+              :href="route('blog')"
+              class="text-gray-600 hover:text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+              @click="isMobileMenuOpen = false"
+            >
+              Blog
+            </Link>
+            <template v-if="$page.props.auth.user">
+              <Link
+                :href="route('dashboard')"
+                class="text-gray-600 hover:text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                @click="isMobileMenuOpen = false"
+              >
+                Dashboard
+              </Link>
+            </template>
+            <template v-else>
+              <Link
+                :href="route('login')"
+                class="text-gray-600 hover:text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                @click="isMobileMenuOpen = false"
+              >
+                Sign In
+              </Link>
+              <div class="px-3 py-2">
+                <Link
+                  :href="route('register')"
+                  class="w-full inline-flex items-center justify-center rounded-lg border border-transparent bg-gradient-to-r from-emerald-600 to-cyan-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-emerald-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all duration-200"
+                  @click="isMobileMenuOpen = false"
+                >
+                  Get Started
+                </Link>
+              </div>
             </template>
           </div>
         </div>
@@ -149,7 +210,7 @@ const testimonials = [
             :class="{ 'opacity-100 translate-y-0': isVisible, 'opacity-0 translate-y-4': !isVisible }"
           >
             <StarIcon class="mr-2 h-4 w-4" />
-            Conforme à la directive CSRD 2024
+            CSRD 2024 Compliant
           </div>
 
           <!-- Main Heading -->
@@ -157,11 +218,11 @@ const testimonials = [
             class="text-5xl font-bold tracking-tight text-gray-900 sm:text-7xl mb-8 transition-all duration-700 delay-150"
             :class="{ 'opacity-100 translate-y-0': isVisible, 'opacity-0 translate-y-8': !isVisible }"
           >
-            Transparence 
+            Transparent 
             <span class="bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
-              RSE
+              CSR
             </span>
-            <br />pour Entreprises
+            <br />for Companies
           </h1>
 
           <!-- Subtitle -->
@@ -169,8 +230,8 @@ const testimonials = [
             class="mx-auto mt-6 max-w-2xl text-xl leading-8 text-gray-600 mb-10 transition-all duration-700 delay-300"
             :class="{ 'opacity-100 translate-y-0': isVisible, 'opacity-0 translate-y-8': !isVisible }"
           >
-            Découvrez les performances environnementales, sociales et de gouvernance des entreprises françaises. 
-            Notre plateforme agrège des données publiques pour fournir des scores RSE transparents et aider les entreprises à améliorer leur empreinte durable.
+            Discover the environmental, social and governance performance of French companies. 
+            Our platform aggregates public data to provide transparent CSR scores and help companies improve their sustainable footprint.
           </p>
 
           <!-- CTA Buttons -->
@@ -180,10 +241,10 @@ const testimonials = [
           >
             <template v-if="$page.props.auth.user">
               <Link
-                :href="route('rse.dashboard')"
+                :href="route('dashboard')"
                 class="group inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 px-8 py-4 text-lg font-semibold text-white shadow-lg hover:from-emerald-700 hover:to-cyan-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-all duration-200 hover:scale-105"
               >
-                Accéder au Dashboard
+                Access Dashboard
                 <ArrowRightIcon class="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
               </Link>
             </template>
@@ -192,7 +253,7 @@ const testimonials = [
                 :href="route('register')"
                 class="group inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 px-8 py-4 text-lg font-semibold text-white shadow-lg hover:from-emerald-700 hover:to-cyan-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-all duration-200 hover:scale-105"
               >
-                Explorer Gratuitement
+                Explore for Free
                 <ArrowRightIcon class="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
               </Link>
             </template>
@@ -200,7 +261,7 @@ const testimonials = [
               href="#features" 
               class="group inline-flex items-center text-lg font-semibold leading-7 text-gray-700 hover:text-gray-900 transition-colors duration-200"
             >
-              En savoir plus 
+              Learn more 
               <ChevronRightIcon class="ml-1 h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
             </a>
           </div>
@@ -211,20 +272,20 @@ const testimonials = [
             :class="{ 'opacity-100 translate-y-0': isVisible, 'opacity-0 translate-y-8': !isVisible }"
           >
             <div class="flex flex-col items-center">
-              <div class="text-sm text-gray-500 mb-1">Sources officielles</div>
+              <div class="text-sm text-gray-500 mb-1">Official sources</div>
               <div class="text-xs text-gray-400">ADEME • Data.gouv • CSRD</div>
             </div>
             <div class="flex flex-col items-center">
-              <div class="text-sm text-gray-500 mb-1">Mise à jour</div>
-              <div class="text-xs text-gray-400">Temps réel via API</div>
+              <div class="text-sm text-gray-500 mb-1">Real-time updates</div>
+              <div class="text-xs text-gray-400">Live API integration</div>
             </div>
             <div class="flex flex-col items-center">
-              <div class="text-sm text-gray-500 mb-1">Conformité</div>
-              <div class="text-xs text-gray-400">RGPD • EcoVadis</div>
+              <div class="text-sm text-gray-500 mb-1">Compliance</div>
+              <div class="text-xs text-gray-400">GDPR • EcoVadis</div>
             </div>
             <div class="flex flex-col items-center">
-              <div class="text-sm text-gray-500 mb-1">Secteurs</div>
-              <div class="text-xs text-gray-400">220+ catégories</div>
+              <div class="text-sm text-gray-500 mb-1">Sectors</div>
+              <div class="text-xs text-gray-400">220+ categories</div>
             </div>
           </div>
         </div>
@@ -251,20 +312,20 @@ const testimonials = [
       <!-- Features Section -->
       <div id="features" class="mx-auto max-w-7xl px-6 lg:px-8 py-24 sm:py-32">
         <div class="mx-auto max-w-2xl lg:text-center mb-16">
-          <h2 class="text-base font-semibold leading-7 text-emerald-600 mb-2">Analyse Complète</h2>
+          <h2 class="text-base font-semibold leading-7 text-emerald-600 mb-2">Complete Analysis</h2>
           <p class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl mb-6">
-            Tout ce dont vous avez besoin pour évaluer la durabilité
+            Everything you need to assess sustainability
           </p>
           <p class="text-xl leading-8 text-gray-600">
-            Notre plateforme exploite les sources de données publiques officielles, incluant les rapports CSRD, 
-            les bases de données ADEME et les portails gouvernementaux pour fournir des évaluations durables précises et actualisées.
+            Our platform leverages official public data sources, including CSRD reports, 
+            ADEME databases and government portals to provide accurate and up-to-date sustainability assessments.
           </p>
         </div>
 
         <div class="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-4xl">
           <dl class="grid max-w-xl grid-cols-1 gap-x-8 gap-y-10 lg:max-w-none lg:grid-cols-2 lg:gap-y-16">
             <div 
-              v-for="(feature, index) in features" 
+              v-for="(feature) in features" 
               :key="feature.name"
               class="group relative pl-16 transition-all duration-500 hover:scale-105"
             >
@@ -289,9 +350,9 @@ const testimonials = [
       <div class="bg-gradient-to-br from-gray-50 to-white py-24 sm:py-32">
         <div class="mx-auto max-w-7xl px-6 lg:px-8">
           <div class="mx-auto max-w-xl text-center">
-            <h2 class="text-lg font-semibold leading-8 tracking-tight text-emerald-600">Témoignages</h2>
+            <h2 class="text-lg font-semibold leading-8 tracking-tight text-emerald-600">Testimonials</h2>
             <p class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Ils nous font confiance
+              They trust us
             </p>
           </div>
           <div class="mx-auto mt-16 flow-root max-w-2xl sm:mt-20 lg:mx-0 lg:max-w-none">
@@ -327,18 +388,18 @@ const testimonials = [
         <div class="relative px-6 py-24 sm:px-6 sm:py-32 lg:px-8">
           <div class="mx-auto max-w-2xl text-center">
             <h2 class="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              Prêt à explorer la durabilité corporate ?
+              Ready to explore corporate sustainability?
             </h2>
             <p class="mx-auto mt-6 max-w-xl text-xl leading-8 text-emerald-100">
-              Rejoignez des milliers d'utilisateurs qui s'appuient sur EcoScope pour des insights de durabilité transparents et basés sur les données.
+              Join thousands of users who rely on EcoScope for transparent, data-driven sustainability insights.
             </p>
             <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <template v-if="$page.props.auth.user">
                 <Link
-                  :href="route('rse.dashboard')"
+                  :href="route('dashboard')"
                   class="group inline-flex items-center rounded-xl bg-white px-8 py-4 text-lg font-semibold text-emerald-600 shadow-lg hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-all duration-200 hover:scale-105"
                 >
-                  Accéder au Dashboard
+                  Access Dashboard
                   <ArrowRightIcon class="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
                 </Link>
               </template>
@@ -347,14 +408,14 @@ const testimonials = [
                   :href="route('register')"
                   class="group inline-flex items-center rounded-xl bg-white px-8 py-4 text-lg font-semibold text-emerald-600 shadow-lg hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-all duration-200 hover:scale-105"
                 >
-                  Commencer Gratuitement
+                  Start Free
                   <ArrowRightIcon class="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
                 </Link>
                 <Link
                   :href="route('login')"
                   class="inline-flex items-center text-xl font-semibold leading-7 text-white hover:text-emerald-100 transition-colors duration-200"
                 >
-                  Se connecter 
+                  Sign in 
                   <ArrowRightIcon class="ml-1 h-5 w-5" />
                 </Link>
               </template>
@@ -370,10 +431,10 @@ const testimonials = [
         <div class="flex justify-center space-x-6 md:order-2">
           <div class="text-center md:text-left">
             <p class="text-sm leading-5 text-gray-400 mb-2">
-              Sources de données officielles
+              Official data sources
             </p>
             <p class="text-xs leading-5 text-gray-500">
-              ADEME • Data.gouv.fr • Rapports CSRD • EcoVadis • INSEE
+              ADEME • Data.gouv.fr • CSRD Reports • EcoVadis • INSEE
             </p>
           </div>
         </div>
@@ -387,7 +448,7 @@ const testimonials = [
             </span>
           </div>
           <p class="mt-2 text-center md:text-left text-xs leading-5 text-gray-500">
-            &copy; {{ new Date().getFullYear() }} EcoScope. Promouvoir la transparence corporate pour un futur durable.
+            &copy; {{ new Date().getFullYear() }} EcoScope. Promoting corporate transparency for a sustainable future.
           </p>
         </div>
       </div>
