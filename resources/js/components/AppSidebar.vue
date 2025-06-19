@@ -5,18 +5,23 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, LayoutGrid, Newspaper, TrendingUpIcon } from 'lucide-vue-next';
+import { BookOpen, LayoutGrid, Newspaper, TrendingUpIcon, CreditCard } from 'lucide-vue-next';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'CSR Dashboard',
-        href: '/dashboard',
+        href: '/rse',
         icon: LayoutGrid,
     },
     {
         title: 'CSR Blog',
         href: '/blog',
         icon: Newspaper,
+    },
+    {
+        title: 'Subscription',
+        href: '/subscription',
+        icon: CreditCard,
     },
 ];
 

@@ -12,6 +12,10 @@ Route::get('/blog', function () {
     return Inertia::render('Blog');
 })->name('blog');
 
+Route::get('/subscription', function () {
+    return Inertia::render('Subscription');
+})->name('subscription');
+
 Route::get('dashboard', [RseDashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

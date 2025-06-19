@@ -118,7 +118,7 @@ const chartOptions = {
         padding: 20,
         font: {
           size: 12,
-          weight: 'normal' // Changed from '500' to 'bold' to match allowed values
+          weight: 'normal' as const // Use allowed values: "bold", "normal", "lighter", "bolder"
         },
       },
     },
@@ -160,8 +160,8 @@ const doughnutOptions = {
         padding: 15,
         font: {
           size: 12,
-          weight: 'normal' // Changed from '500' to 'bold' to match allowed values
-        },
+          weight: 'normal' as const // Use only allowed values: "bold", "normal", "lighter", "bolder"
+        } as const,
       },
     },
   },
@@ -197,7 +197,7 @@ const handleSort = (column: string) => {
     sortBy.value = column;
     sortOrder.value = 'desc';
   }
-  
+
   // Trigger data refresh with new sorting using Inertia
   refreshDashboardData();
 };
@@ -217,19 +217,27 @@ const getSortIcon = (column: string) => {
   if (sortBy.value !== column) return null;
   return sortOrder.value === 'asc' ? ChevronUpIcon : ChevronDownIcon;
 };
+
+const goToCompanyDetail = (companyId: number) => {
+  router.get(`/rse/company/${companyId}`);
+};
 </script>
 
 <template>
+
   <Head title="CSR Dashboard - EcoScope">
-    <meta name="description" content="Corporate Sustainability Assessment Dashboard - Discover the sustainability performance of French companies with detailed CSR scores and analytics." />
+    <meta name="description"
+      content="Corporate Sustainability Assessment Dashboard - Discover the sustainability performance of French companies with detailed CSR scores and analytics." />
   </Head>
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="space-y-8">
       <!-- Enhanced Header -->
-      <div class="bg-gradient-to-r from-emerald-50 via-white to-cyan-50 rounded-2xl shadow-lg border border-gray-200/20 p-8">
+      <div
+        class="bg-gradient-to-r from-emerald-50 via-white to-cyan-50 rounded-2xl shadow-lg border border-gray-200/20 p-8">
         <div class="flex items-center space-x-4 mb-4">
-          <div class="h-12 w-12 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-xl flex items-center justify-center">
+          <div
+            class="h-12 w-12 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-xl flex items-center justify-center">
             <TrendingUpIcon class="h-7 w-7 text-white" />
           </div>
           <div>
@@ -252,10 +260,12 @@ const getSortIcon = (column: string) => {
 
       <!-- Enhanced Metrics -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-6 hover:shadow-xl transition-all duration-300">
+        <div
+          class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-6 hover:shadow-xl transition-all duration-300">
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center">
+              <div
+                class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center">
                 <BuildingIcon class="w-6 h-6 text-white" />
               </div>
             </div>
@@ -270,10 +280,12 @@ const getSortIcon = (column: string) => {
           </div>
         </div>
 
-        <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-6 hover:shadow-xl transition-all duration-300">
+        <div
+          class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-6 hover:shadow-xl transition-all duration-300">
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+              <div
+                class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
                 <BarChart3Icon class="w-6 h-6 text-white" />
               </div>
             </div>
@@ -288,10 +300,12 @@ const getSortIcon = (column: string) => {
           </div>
         </div>
 
-        <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-6 hover:shadow-xl transition-all duration-300">
+        <div
+          class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-6 hover:shadow-xl transition-all duration-300">
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+              <div
+                class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
                 <StarIcon class="w-6 h-6 text-white" />
               </div>
             </div>
@@ -306,10 +320,12 @@ const getSortIcon = (column: string) => {
           </div>
         </div>
 
-        <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-6 hover:shadow-xl transition-all duration-300">
+        <div
+          class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-6 hover:shadow-xl transition-all duration-300">
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+              <div
+                class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
                 <AlertTriangleIcon class="w-6 h-6 text-white" />
               </div>
             </div>
@@ -330,7 +346,8 @@ const getSortIcon = (column: string) => {
         <!-- Distribution des scores -->
         <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
           <div class="flex items-center space-x-3 mb-6">
-            <div class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
+            <div
+              class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
               <TrendingUpIcon class="h-4 w-4 text-white" />
             </div>
             <h3 class="text-xl font-bold text-gray-900">
@@ -345,7 +362,8 @@ const getSortIcon = (column: string) => {
         <!-- Performance par secteur -->
         <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
           <div class="flex items-center space-x-3 mb-6">
-            <div class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
+            <div
+              class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
               <BarChart3Icon class="h-4 w-4 text-white" />
             </div>
             <h3 class="text-xl font-bold text-gray-900">
@@ -363,7 +381,8 @@ const getSortIcon = (column: string) => {
         <div class="px-8 py-6 border-b border-gray-200/50 bg-gradient-to-r from-emerald-50 to-cyan-50">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
-              <div class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
+              <div
+                class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
                 <StarIcon class="h-4 w-4 text-white" />
               </div>
               <div>
@@ -375,30 +394,20 @@ const getSortIcon = (column: string) => {
             </div>
             <div class="flex items-center space-x-2">
               <span class="text-sm text-gray-500">Sort by:</span>
-              <select 
-                v-model="sortBy" 
-                @change="refreshDashboardData"
-                class="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:border-emerald-500 focus:outline-none"
-              >
+              <select v-model="sortBy" @change="refreshDashboardData"
+                class="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:border-emerald-500 focus:outline-none">
                 <option value="global_score">Score</option>
                 <option value="name">Name</option>
                 <option value="sector">Sector</option>
                 <option value="rating_letter">Rating</option>
               </select>
-              <button 
-                @click="handleSort(sortBy)"
-                class="p-1 hover:bg-gray-100 rounded transition-colors"
-                :class="{ 'bg-emerald-50 text-emerald-600': sortBy === sortBy }"
-              >
-                <component 
-                  :is="getSortIcon(sortBy) || ChevronDownIcon" 
-                  class="h-4 w-4 text-gray-600"
-                />
+              <button @click="handleSort(sortBy)" class="p-1 hover:bg-gray-100 rounded transition-colors"
+                :class="{ 'bg-emerald-50 text-emerald-600': sortBy === sortBy }">
+                <component :is="getSortIcon(sortBy) || ChevronDownIcon" class="h-4 w-4 text-gray-600" />
               </button>
               <button
                 class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-600 to-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow hover:from-emerald-700 hover:to-cyan-700 transition-all ml-4"
-                @click="() => router.get('/rse/companies')"
-              >
+                @click="() => router.get('/rse/companies')">
                 See All Companies
               </button>
             </div>
@@ -426,7 +435,9 @@ const getSortIcon = (column: string) => {
               </tr>
             </thead>
             <tbody class="bg-white/50 divide-y divide-gray-200/30">
-              <tr v-for="company in props.topCompanies" :key="company.id" class="hover:bg-gray-50/50 transition-colors duration-200">
+              <tr v-for="company in props.topCompanies" :key="company.id"
+                class="hover:bg-gray-50/50 transition-colors duration-200 cursor-pointer"
+                @click="goToCompanyDetail(company.id)">
                 <td class="px-8 py-4 whitespace-nowrap font-bold text-gray-700">{{ company.display_rank ?? '-' }}</td>
                 <td class="px-8 py-4 whitespace-nowrap">
                   <div class="text-sm font-semibold text-gray-900">
@@ -443,55 +454,20 @@ const getSortIcon = (column: string) => {
                     {{ Math.round(company.global_score) }}/100
                   </div>
                   <div class="w-20 bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       class="bg-gradient-to-r from-emerald-500 to-cyan-500 h-2 rounded-full transition-all duration-500"
-                      :style="`width: ${company.global_score}%`"
-                    ></div>
+                      :style="`width: ${company.global_score}%`"></div>
                   </div>
                 </td>
                 <td class="px-8 py-4 whitespace-nowrap">
-                  <span 
-                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border"
-                    :class="getRatingColor(company.rating_letter)"
-                  >
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border"
+                    :class="getRatingColor(company.rating_letter)">
                     {{ company.rating_letter }}
                   </span>
                 </td>
               </tr>
             </tbody>
           </table>
-        </div>
-      </div>
-
-      <!-- Enhanced Search Section -->
-      <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/20 p-8">
-        <div class="flex items-center space-x-3 mb-6">
-          <div class="h-8 w-8 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-lg flex items-center justify-center">
-            <TrendingUpIcon class="h-4 w-4 text-white" />
-          </div>
-          <div>
-            <h3 class="text-xl font-bold text-gray-900">
-              Search for a Company
-            </h3>
-            <p class="text-gray-600 text-sm mt-1">Find detailed CSR assessment for any French company</p>
-          </div>
-        </div>
-        <div class="flex flex-col sm:flex-row gap-4">
-          <div class="flex-1">
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Company name or SIREN number..."
-              class="block w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 transition-colors duration-200"
-              @keyup.enter="handleSearch"
-            />
-          </div>
-          <button 
-            @click="handleSearch"
-            class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-emerald-600 to-cyan-600 px-8 py-3 text-sm font-semibold text-white shadow-lg hover:from-emerald-700 hover:to-cyan-700 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-all duration-200"
-          >
-            Search Company
-          </button>
         </div>
       </div>
     </div>

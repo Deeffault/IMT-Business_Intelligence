@@ -178,12 +178,61 @@ class RseDashboardController extends Controller
             ->where('sector', $company->sector)
             ->where('id', '!=', $company->id)
             ->whereHas('rseScore')
-            ->limit(5)
-            ->get();
+            ->orderByDesc(function ($query) {
+                $query->select('global_score')
+                    ->from('rse_scores')
+                    ->whereColumn('rse_scores.company_id', 'companies.id')
+                    ->limit(1);
+            })
+            ->limit(6)
+            ->get()
+            ->map(function ($similarCompany) {
+                return [
+                    'id' => $similarCompany->id,
+                    'name' => $similarCompany->name,
+                    'sector' => $similarCompany->sector,
+                    'rseScore' => $similarCompany->rseScore ? [
+                        'global_score' => $similarCompany->rseScore->global_score,
+                        'rating_letter' => $similarCompany->rseScore->rating_letter,
+                    ] : null,
+                ];
+            });
+
+        // Add sector performance data for comparison
+        $sectorStats = Company::with('rseScore')
+            ->where('sector', $company->sector)
+            ->whereHas('rseScore')
+            ->get()
+            ->map(function ($c) {
+                return $c->rseScore->global_score;
+            });
+
+        // Calculate 75th percentile (top quartile) manually
+        $sortedScores = $sectorStats->filter(fn ($v) => is_numeric($v))->sort()->values()->map(fn ($v) => (float) $v)->all();
+        $count = count($sortedScores);
+        $topQuartile = null;
+        if ($count > 0) {
+            $pos = 0.75 * ($count - 1);
+            $base = floor($pos);
+            $rest = $pos - $base;
+            if (($base + 1) < $count) {
+                $topQuartile = $sortedScores[(int) $base] + $rest * ($sortedScores[(int) $base + 1] - $sortedScores[(int) $base]);
+            } else {
+                $topQuartile = $sortedScores[(int) $base];
+            }
+        }
+
+        $sectorPerformance = [
+            'average_score' => $sectorStats->avg(),
+            'median_score' => $sectorStats->median(),
+            'top_quartile' => $topQuartile,
+            'company_count' => $sectorStats->count(),
+        ];
 
         return Inertia::render('CompanyDetail', [
             'company' => $company,
             'similarCompanies' => $similarCompanies,
+            'sectorPerformance' => $sectorPerformance,
         ]);
     }
 
@@ -222,25 +271,41 @@ class RseDashboardController extends Controller
 
     public function companiesTable(Request $request): Response
     {
-        $query = $request->get('name');
-        $hasScore = $request->boolean('has_score');
+        $name = $request->get('name');
+        $sector = $request->get('sector');
+        $minScore = $request->get('min_score');
+        $maxScore = $request->get('max_score');
         $perPage = 25;
 
-        $companiesQuery = \App\Models\Company::query()
-            ->with('rseScore')
-            ->when($query, function ($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%");
-            })
-            ->when($hasScore, function ($q) {
-                $q->whereHas('rseScore');
-            });
+        // Modification : Changer le tri par défaut pour global_score desc
+        $sortBy = $request->get('sort', 'global_score');
+        $sortOrder = $request->get('order', 'desc');
 
-        $sortBy = $request->get('sort', 'display_rank');
-        $sortOrder = $request->get('order', 'asc');
         $allowedSortFields = ['name', 'sector', 'global_score', 'rating_letter', 'display_rank'];
         $allowedSortOrders = ['asc', 'desc'];
-        $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'display_rank';
-        $sortOrder = in_array($sortOrder, $allowedSortOrders) ? $sortOrder : 'asc';
+        $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'global_score';
+        $sortOrder = in_array($sortOrder, $allowedSortOrders) ? $sortOrder : 'desc';
+
+        $companiesQuery = Company::query()
+            ->with('rseScore')
+            // CORRECTION PRINCIPALE : Ajouter le filtre pour les entreprises avec score RSE
+            ->whereHas('rseScore')
+            ->when($name, function ($q) use ($name) {
+                $q->where('name', 'like', "%{$name}%");
+            })
+            ->when($sector, function ($q) use ($sector) {
+                $q->where('sector', $sector);
+            })
+            ->when($minScore || $maxScore, function ($q) use ($minScore, $maxScore) {
+                $q->whereHas('rseScore', function ($subQuery) use ($minScore, $maxScore) {
+                    if ($minScore) {
+                        $subQuery->where('global_score', '>=', $minScore);
+                    }
+                    if ($maxScore) {
+                        $subQuery->where('global_score', '<=', $maxScore);
+                    }
+                });
+            });
 
         // Générer le classement global une fois pour toutes les companies avec un score
         $allRanked = Company::with('rseScore')
@@ -248,26 +313,28 @@ class RseDashboardController extends Controller
             ->get()
             ->sortByDesc(fn ($c) => $c->rseScore->global_score ?? 0)
             ->values();
+
         $rankMap = [];
         foreach ($allRanked as $idx => $company) {
             $rankMap[$company->id] = $idx + 1;
         }
 
+        // Apply sorting before pagination
+        if ($sortBy === 'global_score' || $sortBy === 'rating_letter') {
+            $companiesQuery->join('rse_scores', 'companies.id', '=', 'rse_scores.company_id')
+                ->select('companies.*')
+                ->orderBy("rse_scores.{$sortBy}", $sortOrder);
+        } elseif ($sortBy !== 'display_rank') {
+            $companiesQuery->orderBy($sortBy, $sortOrder);
+        }
+
         $companies = $companiesQuery->paginate($perPage)->appends($request->all());
 
-        // Injection du classement global
-        $companies->getCollection()->map(function ($company) use ($rankMap) {
-            // Using map() instead of transform() because we're converting to array
-            return [
-                'id' => $company->id,
-                'name' => $company->name,
-                'sector' => $company->sector,
-                'display_rank' => $rankMap[$company->id] ?? null,
-                'rseScore' => [
-                    'global_score' => $company->rseScore->global_score ?? '',
-                    'rating_letter' => $company->rseScore->rating_letter ?? null,
-                ],
-            ];
+        // Injection du classement global et données complètes
+        $companies->getCollection()->transform(function ($company) use ($rankMap) {
+            $company->display_rank = $rankMap[$company->id] ?? null;
+
+            return $company;
         });
 
         // Tri côté PHP sur display_rank si demandé
@@ -276,11 +343,23 @@ class RseDashboardController extends Controller
             $companies->setCollection($sorted);
         }
 
+        // Get available sectors for filter dropdown
+        $sectors = Company::select('sector')
+            ->whereNotNull('sector')
+            ->distinct()
+            ->orderBy('sector')
+            ->pluck('sector');
+
         return Inertia::render('CompanyTable', [
             'companies' => $companies,
+            'sectors' => $sectors,
             'filters' => [
-                'name' => $query,
-                'has_score' => $hasScore,
+                'name' => $name,
+                'sector' => $sector,
+                'min_score' => $minScore,
+                'max_score' => $maxScore,
+                'sort' => $sortBy,
+                'order' => $sortOrder,
             ],
         ]);
     }

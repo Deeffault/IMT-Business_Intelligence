@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property array<array-key, mixed>|null $contact_info
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int|null $display_rank
  * @property-read string $formatted_size
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RseReport> $reports
  * @property-read int|null $reports_count
@@ -63,6 +64,9 @@ class Company extends Model
     protected $casts = [
         'contact_info' => 'array',
     ];
+
+    // Attributs dynamiques
+    public $display_rank;
 
     public function rseScore(): HasOne
     {
