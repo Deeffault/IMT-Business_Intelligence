@@ -303,14 +303,14 @@ class RseDashboardController extends Controller
         $maxScore = $request->get('max_score');
         $perPage = 25;
 
-        // Modification : Changer le tri par défaut pour global_score desc
-        $sortBy = $request->get('sort', 'global_score');
-        $sortOrder = $request->get('order', 'desc');
+        // Modification : Changer le tri par défaut pour display_rank asc
+        $sortBy = $request->get('sort', 'display_rank');
+        $sortOrder = $request->get('order', 'asc');
 
         $allowedSortFields = ['name', 'sector', 'global_score', 'rating_letter', 'display_rank'];
         $allowedSortOrders = ['asc', 'desc'];
-        $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'global_score';
-        $sortOrder = in_array($sortOrder, $allowedSortOrders) ? $sortOrder : 'desc';
+        $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'display_rank';
+        $sortOrder = in_array($sortOrder, $allowedSortOrders) ? $sortOrder : 'asc';
 
         $companiesQuery = Company::query()
             ->with('rseScore')
@@ -345,7 +345,7 @@ class RseDashboardController extends Controller
             $rankMap[$company->id] = $idx + 1;
         }
 
-        // Apply sorting before pagination
+        // Apply sorting before pagination - SAUF pour display_rank
         if ($sortBy === 'global_score' || $sortBy === 'rating_letter') {
             $companiesQuery->join('rse_scores', 'companies.id', '=', 'rse_scores.company_id')
                 ->select('companies.*')
@@ -354,19 +354,75 @@ class RseDashboardController extends Controller
             $companiesQuery->orderBy($sortBy, $sortOrder);
         }
 
-        $companies = $companiesQuery->paginate($perPage)->appends($request->all());
-
-        // Injection du classement global et données complètes
-        $companies->getCollection()->transform(function ($company) use ($rankMap) {
-            $company->display_rank = $rankMap[$company->id] ?? null;
-
-            return $company;
-        });
-
-        // Tri côté PHP sur display_rank si demandé
+        // Si on trie par display_rank, on récupère toutes les données puis on trie côté PHP
         if ($sortBy === 'display_rank') {
-            $sorted = $companies->getCollection()->sortBy('display_rank', SORT_REGULAR, $sortOrder === 'desc')->values();
-            $companies->setCollection($sorted);
+            // Get all companies first without sorting
+            $allCompanies = $companiesQuery->get();
+            
+            // Add display_rank to each company
+            $allCompanies->transform(function ($company) use ($rankMap) {
+                $company->display_rank = $rankMap[$company->id] ?? 999999; // High number for companies without rank
+                
+                // Convert to array and format rseScore data
+                $companyArray = $company->toArray();
+                if ($company->rseScore) {
+                    $companyArray['rseScore'] = [
+                        'global_score' => (float) $company->rseScore->global_score,
+                        'rating_letter' => $company->rseScore->rating_letter,
+                        'environmental_score' => (float) $company->rseScore->environmental_score,
+                        'social_score' => (float) $company->rseScore->social_score,
+                        'governance_score' => (float) $company->rseScore->governance_score,
+                        'ethics_score' => (float) $company->rseScore->ethics_score,
+                    ];
+                }
+                $companyArray['display_rank'] = $company->display_rank;
+                
+                return (object) $companyArray;
+            });
+            
+            // Sort by display_rank
+            $sorted = $allCompanies->sortBy('display_rank', SORT_REGULAR, $sortOrder === 'desc');
+            
+            // Manual pagination
+            $currentPage = $request->get('page', 1);
+            $offset = ($currentPage - 1) * $perPage;
+            $paginatedItems = $sorted->slice($offset, $perPage)->values();
+            
+            // Create paginator manually
+            $companies = new \Illuminate\Pagination\LengthAwarePaginator(
+                $paginatedItems,
+                $sorted->count(),
+                $perPage,
+                $currentPage,
+                [
+                    'path' => $request->url(),
+                    'pageName' => 'page',
+                ]
+            );
+            $companies->appends($request->all());
+            
+        } else {
+            // Normal pagination for other sorting
+            $companies = $companiesQuery->paginate($perPage)->appends($request->all());
+
+            // Injection du classement global et données complètes
+            $companies->getCollection()->transform(function ($company) use ($rankMap) {
+                $company->display_rank = $rankMap[$company->id] ?? null;
+                
+                // Ensure rseScore data is properly formatted
+                if ($company->rseScore) {
+                    $company->rseScore = [
+                        'global_score' => (float) $company->rseScore->global_score,
+                        'rating_letter' => $company->rseScore->rating_letter,
+                        'environmental_score' => (float) $company->rseScore->environmental_score,
+                        'social_score' => (float) $company->rseScore->social_score,
+                        'governance_score' => (float) $company->rseScore->governance_score,
+                        'ethics_score' => (float) $company->rseScore->ethics_score,
+                    ];
+                }
+
+                return $company;
+            });
         }
 
         // Get available sectors for filter dropdown

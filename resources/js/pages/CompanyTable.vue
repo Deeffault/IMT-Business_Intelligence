@@ -124,6 +124,32 @@ const getRatingColor = (letter: string) => {
   };
   return colors[letter] || 'text-gray-600 bg-gray-50 border-gray-200';
 };
+
+// Function to get color based on score (green > yellow > orange > red)
+const getScoreColor = (score: number) => {
+  if (score >= 80) {
+    return 'from-emerald-500 to-emerald-600'; // Excellent (80-100)
+  } else if (score >= 65) {
+    return 'from-yellow-400 to-yellow-500'; // Good (65-79)
+  } else if (score >= 50) {
+    return 'from-orange-400 to-orange-500'; // Average (50-64)
+  } else {
+    return 'from-red-400 to-red-500'; // Poor (0-49)
+  }
+};
+
+// Function to get text color based on score
+const getScoreTextColor = (score: number) => {
+  if (score >= 80) {
+    return 'text-emerald-700'; 
+  } else if (score >= 65) {
+    return 'text-yellow-700';
+  } else if (score >= 50) {
+    return 'text-orange-700';
+  } else {
+    return 'text-red-700';
+  }
+};
 </script>
 
 <template>
@@ -276,12 +302,13 @@ const getRatingColor = (letter: string) => {
               <!-- Global Score -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <div v-if="company.rseScore?.global_score !== null && company.rseScore?.global_score !== undefined">
-                  <div class="text-sm font-medium text-gray-900 mb-1">
+                  <div class="text-sm font-medium mb-1" :class="getScoreTextColor(company.rseScore.global_score)">
                     {{ Math.round(company.rseScore.global_score) }}/100
                   </div>
                   <div class="w-20 bg-gray-200 rounded-full h-2">
                     <div
-                      class="bg-gradient-to-r from-emerald-500 to-cyan-500 h-2 rounded-full transition-all duration-500"
+                      class="bg-gradient-to-r h-2 rounded-full transition-all duration-500"
+                      :class="getScoreColor(company.rseScore.global_score)"
                       :style="`width: ${company.rseScore.global_score}%`"></div>
                   </div>
                 </div>
