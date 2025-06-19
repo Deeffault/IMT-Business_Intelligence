@@ -26,7 +26,8 @@ import {
     Recycle,
     Users2,
     Briefcase,
-    Eye
+    Eye,
+    MailIcon
 } from 'lucide-vue-next';
 import {
     Chart as ChartJS,
@@ -1047,6 +1048,30 @@ const doughnutOptions = {
                                     initiative</p>
                                 <span class="text-xs text-purple-600 font-medium">1 month ago</span>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call-to-Action Section for Company Improvement -->
+            <div class="mt-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
+                <div class="text-center">
+                    <h3 class="text-2xl font-bold mb-4">
+                        Vous représentez {{ company.name }} ?
+                    </h3>
+                    <p class="text-lg mb-6 text-blue-100">
+                        Améliorez votre score RSE et votre positionnement dans notre plateforme grâce à nos services d'expertise
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                        <Link 
+                            :href="route('contact.show')" 
+                            class="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium hover:bg-blue-50 transition-colors flex items-center"
+                        >
+                            <MailIcon class="w-5 h-5 mr-2" />
+                            Demander un devis personnalisé
+                        </Link>
+                        <div class="text-blue-100 text-sm">
+                            ✓ Consultation gratuite • ✓ Stratégie sur mesure • ✓ Amélioration garantie
                         </div>
                     </div>
                 </div>

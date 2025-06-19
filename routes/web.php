@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\RseDashboardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -31,6 +32,10 @@ Route::middleware(['auth'])->group(function () {
 
 // Affichage de toutes les entreprises avec filtres et pagination
 Route::get('/rse/companies', [RseDashboardController::class, 'companiesTable'])->name('rse.companies');
+
+// Contact form for companies to improve their RSE score
+Route::get('/contact', [ContactController::class, 'show'])->name('contact.show');
+Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

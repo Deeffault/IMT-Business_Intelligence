@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, LayoutGrid, Newspaper, TrendingUpIcon, CreditCard } from 'lucide-vue-next';
+import { BookOpen, LayoutGrid, Newspaper, TrendingUpIcon, CreditCard, MailIcon } from 'lucide-vue-next';
 
 const mainNavItems: NavItem[] = [
     {
@@ -17,6 +17,11 @@ const mainNavItems: NavItem[] = [
         title: 'CSR Blog',
         href: '/blog',
         icon: Newspaper,
+    },
+    {
+        title: 'Contact',
+        href: '/contact',
+        icon: MailIcon,
     },
     {
         title: 'Subscription',
